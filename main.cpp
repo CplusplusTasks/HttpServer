@@ -30,7 +30,7 @@ int main() {
     try {
         Server server(&epoll, "", PORT);
         server.set_callback_on_accept([&server] (Client* client) {
-            cerr << "we have new client: " << client->get_sfd() << endl;
+            cerr << "new client: " << client->get_sfd() << endl;
         });
 
         server.set_callback_on_receive([&server] (Client* client) {
@@ -42,14 +42,22 @@ int main() {
                 path += "index.html";
                 extension = "html";
             }
+            cerr << "client_sfd" << client->get_sfd() << endl;
             //request.print();
 
-            HttpResponse response;
-            response.setExtension(extension).setMessage(getFile(path)).send(client);
+            cerr << "PATH: " << request.getResourcePath() << endl;
+            if (request.getResourcePath() == "/response.php") {
+                HttpResponse response;
+                response.setMessage("<p>queryUrl: " + request.getQueryUrl() + "</p>" +
+                "<p>PostMessage: " + request.getPostMessage() + "</p>").send(client);
+            } else {
+                HttpResponse response;
+                response.setExtension(extension).setMessage(getFile(path)).send(client);
+            } 
         });
 
         server.set_callback_on_close([&server] (Client* client) {
-            cerr << "Client has left: " << client->get_sfd() << endl;
+            cerr << "close: " << client->get_sfd() << endl;
             //if (server.getCountClients() == 1) {
                 //server.shut_down();
             //}

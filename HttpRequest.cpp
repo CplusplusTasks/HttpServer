@@ -14,27 +14,27 @@ typedef vector<char> const& request_t;
 typedef vector<char>::size_type vector_sz_t;
 
 void HttpRequest::print() const {
-    //cout << "header: " << endl << header << endl;
-    //cout << "---------" << endl;
     cout << "--------BEGIN PRINT---------" << endl;
-    cout << "postMessage: " << postMessage << endl;
-    cout << "hostName: " << hostName << endl;
-    cout << "queryUrl: " << queryUrl << endl;
-    cout << "requestMethod: " << requestMethod << endl;
-    cout << "acceptLanguage: " << acceptLanguage << endl;
-    cout << "resourcePath: " << resourcePath << endl;
-    cout << "extensionOfResource: " << extensionOfResource << endl;
-    cout << "postContentLength: " << postContentLength << endl;
+    cout << "header: " << endl << header << endl;
+    //cout << "---------" << endl;
+    //cout << "postMessage: " << postMessage << endl;
+    //cout << "hostName: " << hostName << endl;
+    //cout << "queryUrl: " << queryUrl << endl;
+    //cout << "requestMethod: " << requestMethod << endl;
+    //cout << "acceptLanguage: " << acceptLanguage << endl;
+    //cout << "resourcePath: " << resourcePath << endl;
+    //cout << "extensionOfResource: " << extensionOfResource << endl;
+    //cout << "postContentLength: " << postContentLength << endl;
 
-    cout << "queryInUrl: " << endl;
-    for (std::pair<string, string> pp : mapQueriesFromUrl) {
-        cout << pp.first << " = " << pp.second << endl;
-    }
+    //cout << "queryInUrl: " << endl;
+    //for (std::pair<string, string> pp : mapQueriesFromUrl) {
+        //cout << pp.first << " = " << pp.second << endl;
+    //}
 
-    cout << "queryPost: " << endl;
-    for (std::pair<string, string> pp : postMapQuery) {
-        cout << pp.first << " = " << pp.second << endl;
-    }
+    //cout << "queryPost: " << endl;
+    //for (std::pair<string, string> pp : postMapQuery) {
+        //cout << pp.first << " = " << pp.second << endl;
+    //}
     cout << "--------END PRINT---------" << endl;
 }
 

@@ -2,30 +2,64 @@
 <html lang="ru" >
     <head>
         <meta charset="utf-8" />
-        <title>AJAX в jQuery | Материалы сайта RUSELLER.COM</title>
+        <title>AJAX</title>
 		
-        <!--<link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon"> -->
 		<link rel="stylesheet" href="css/main.css" type="text/css" media="all" />
-		<link rel="stylesheet" href="css/demopage.css" type="text/css" media="all" />
 		<script src="js/jquery.min.js" type="text/javascript"></script>
 		
     </head>
-    <body>
-        <header>
-            <h2>AJAX в jQuery</h2>
-            <a href="http://www.ruseller.com" class="stuts" target="_blank">Материалы сайта <span>RUSELLER.COM</span></a>
-        </header>
-		
-<div class="examples">
 
-    <button name="sample1" class="sample1">Пример 1 (простой)</button>
-    <button name="sample2" class="sample2">Пример 2 (post)</button>
-    <button name="sample3" class="sample3">Пример 3 (скрипт)</button>
-    <button name="sample4" class="sample4">Пример 4 (xml)</button>
-    <button name="sample5" class="sample5">Пример 5 (json)</button>
-    <img src="img/cat.png" />
+    <body>
+		
+        <div>
+            <span>Select size of field: </span>
+            <select id="sizeField">
+            </select>
+
+            <table id="mainTable">
+            </table>
+
+        </div>
+        <div id="result"> </div>
+
 
     <script language="javascript" type="text/javascript">
+    $(document).ready(function(){
+        var arr = [];
+        for (var i = 2; i < 50; i++) {
+            arr.push({val : i, text : i});
+        }
+        var sel = $("#sizeField")
+        $(arr).each(function() {
+             sel.append($("<option>").attr('value',this.val).text(this.text));
+        });
+
+        var table = $("#mainTable")
+        sel.click(function() {
+            var size = $(this).val();
+            var textTd = "";
+            for (var i = 0; i < size; i++) {
+               textTd += "<td></td>"; 
+            }
+            var resultTable = "";
+            for (var i = 0; i < size; i++) {
+                resultTable += "<tr>" + textTd + "</tr>";
+            }
+
+            table.html(resultTable);
+
+            $("#mainTable td").click(function() {     
+         
+                var column_num = parseInt( $(this).index() ) + 1;
+                var row_num = parseInt( $(this).parent().index() )+1;    
+         
+                $("#result").html( "Row_num =" + row_num + "  ,  Rolumn_num ="+ column_num );   
+            });
+        });
+        sel.onClick();
+        
+    });
+
     $('.sample1').click( function() {
 
         $.ajax({
@@ -50,45 +84,6 @@
 
     });
 
-    $('.sample3').click( function() {
-
-        $.ajax({
-          dataType: 'script',
-          url: 'response.php?action=sample3',
-        });
-
-    });
-
-    $('.sample4').click( function() {
-
-        $.ajax({
-          dataType: 'xml',
-          url: 'response.php?action=sample4',
-          success: function(xmldata){
-            $('.results').html('');
-            $(xmldata).find('item').each(function(){
-                $('<li></li>').html( $(this).text() ).appendTo('.results');
-            });
-          }
-        });
-
-    });
-
-    $('.sample5').click( function() {
-
-        $.ajax({
-          dataType: 'json',
-          url: 'response.php?action=sample5',
-          success: function(jsondata){
-            $('.results').html('Name = ' + jsondata.name + ', Nickname = ' + jsondata.nickname);
-          }
-        });
-
-    });
     </script>
-
-    <div class="results">Ждем ответа</div>
-</div>
-
     </body>
 </html>
