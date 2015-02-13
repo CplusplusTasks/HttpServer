@@ -44,16 +44,6 @@ map
 Client.h
 /home/eugene/ClionProjects/HttpServer/Client.h
 
-/home/eugene/ClionProjects/HttpServer/HttpResponse.cpp
-HttpResponse.h
-/home/eugene/ClionProjects/HttpServer/HttpResponse.h
-ctime
--
-cassert
--
-vector
--
-
 /home/eugene/ClionProjects/HttpServer/HttpResponse.h
 string
 -
@@ -118,5 +108,9 @@ HttpResponse.h
 HttpRequest.h
 /home/eugene/ClionProjects/HttpServer/HttpRequest.h
 set
+-
+unordered_set
+-
+memory
 -
 

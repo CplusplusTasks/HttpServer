@@ -1,83 +1,119 @@
 var wasCleaned = false;
 var person = null;
-$(document).ready(function(){
-    $("#mainTable").hide();
+var partner;
+var yourFig = "X";
+var timoutIdWaitingCreator;
+var size;
+
+$(document).ready(function() {
+    $("#myNameBlock").hide();
+    $("#intermediateStep").hide();
+    $("#createFieldStep").hide();
     $("#playFieldStep").hide();
-    $("#nextStep").click(function() {
-        person = $("#name").val();
-        if (person != null && person != "") {
-            $.ajax({
-                type: 'POST',
-                url: "new_player",
-                data: 'name=' + person,
-                success: function(data) {
-                    $("#createField").show();
-                    $("#registrationStep").slideUp();
-                    $("#myName").html(person);
-                },
-                error: function(xhr, status) {
-                    if (xhr.status == 400) {
-                        alert("Someone already has that nickname.\n Try another?")
-                    }
-                }
-            });
-        }
-    });
+    $("#joinStep").hide();
 
-    $("#")
+    $("#signInButton").click(signInOnClick);
 
-    var sel = $("#sizeField")
-    function initSelection() {
-        var arr = [];
-        for (var i = 2; i < 50; i++) {
-            arr.push({val : i, text : i});
-        }
-        $(arr).each(function() {
-            if (this.val == 3) {
-                 sel.append($("<option selected='selected'>").attr('value',this.val).text(this.text));
-            } else {
-                 sel.append($("<option>").attr('value',this.val).text(this.text));
-            }
-        });
-    }
+    $("#createFieldButton").click(createFieldOnClick);
+    $("#createButton").click(createOnClick);
+    $("#cancelButton").click(cancelOnClick);
 
-    initSelection();
+    $("#joinButton").click(joinOnClick);
+    $("#updListOfCreators").on("click", updListOfCreater);
 
-    sel.click(function() {
-        var size = $(this).val();
-        var textTd = "";
-        for (var i = 0; i < size; i++) {
-           textTd += "<td></td>"; 
-        }
-        var resultTable = "";
-        for (var i = 0; i < size; i++) {
-            resultTable += "<tr>" + textTd + "</tr>";
-        }
+    $("#updReadyButton").on("click", updListOfReadyPlayers);
 
-        $("#gameField").html(resultTable);
-
-        $("#gameField td").click(function() {     
-     
-            $(this).html("X");
-            var column_num = parseInt( $(this).index() ) + 1;
-            var row_num = parseInt( $(this).parent().index() )+1;    
-     
-            $("#result").html( "Row_num =" + row_num + "  ,  Rolumn_num ="+ column_num );   
-        });
-    });
-    sel.click();
-
-    updCurPlayers();
     setInterval(updCurPlayers, 1000); 
-
-    $(window).on('beforeunload', pageCleanup);
-    $(window).on("unload", pageCleanup);
-
 });
+
+function cancelOnClick() {
+    $("#createFieldStep *").attr("disabled", false);
+}
+
+function createOnClick() {
+    $("#createFieldStep *").attr("disabled", true);
+    $("#cancelButton").attr("disabled", false);
+    $("#updateReadyPlayers").attr("disabled", false);
+    
+    var request = "name=" + person;
+    request += "&size=" + size;
+    $.ajax({
+        type: 'POST',
+        url: "create_field",
+        data: request
+    });
+
+}
+
+function updListOfReadyPlayers() {
+    var request = "name=" + person;
+    $.ajax({
+        type: 'POST',
+        url: "get_ready_players",
+        success: function(data) {
+            $("#listOfReadyPlayers").html(data);
+            $("#listOfReadyPlayers td").on("click", playWith);
+        },
+        data: request
+    });
+}
+
+function playWith() {
+    alert("playWith: " + $(this).val());
+}
+
+function joinOnClick() {
+    $("#intermediateStep").slideUp();
+    $("#joinStep").show();
+    updListOfCreater();
+}
+
+function updListOfCreater() {
+    $.ajax({
+        type: 'POST',
+        url: 'get_creators',
+        success: function(data) {
+            $('#listOfCreator').html(data)
+            $('#listOfCreator td').on("click", joinWith);
+        }
+    });
+}
+
+function joinWith() {
+    var request = "name=" + person;
+    request += "&with=" + $(this).text();
+    $.ajax({
+        type: 'POST',
+        url: 'join_with',
+        data: request,
+        success: function(data) {
+            yourFig = "O";
+            var response = data.split("&");
+            var response_map = {};
+            for (var i = 0; i < response.length; ++i) {
+                var temp = response[i].split("=");
+                response_map[temp[0]] = temp[1];
+            }
+            size = response_map["size"];
+            $("#playFieldStep").show();
+            $("#joinStep").slideUp();
+            changeGameFieldWithSize();
+        }
+    });
+}
+
+function createFieldOnClick() {
+    $("#intermediateStep").slideUp();
+    $("#createFieldStep").show();
+    selector = $("#sizeField")
+    initSelectorOfSizeField(selector);
+    selector.on("change", changeGameField);
+    selector.change()
+}
 
 function updCurPlayers(){
     $.ajax({
-      url: 'get_players',
+      url: 'get_all_players',
       success: function(data) {
         $('#listOfPlayers').html(data)
       }
@@ -97,4 +133,72 @@ function pageCleanup() {
 
     });
     return;
+}
+
+function initSelectorOfSizeField(selector) {
+    var arr = [];
+    for (var i = 2; i < 50; i++) {
+        arr.push({val : i, text : i});
+    }
+    $(arr).each(function() {
+        if (this.val == 3) {
+             selector.append($("<option selected='selected'>").attr('value',this.val).text(this.text));
+        } else {
+             selector.append($("<option>").attr('value',this.val).text(this.text));
+        }
+    });
+} 
+
+function signInOnClick() {
+    person = $("#name").val();
+    if (person) { //person !=null, != ""
+        $.ajax({
+            type: 'POST',
+            url: "new_player",
+            data: 'name=' + person,
+            success: function(data) {
+                $("#myName").html(person);
+                $("#myNameBlock").show();
+                $("#intermediateStep").show();
+                $("#registrationStep").slideUp();
+
+                $(window).on('beforeunload', pageCleanup); // only for Chrome
+                $(window).on("unload", pageCleanup); // for other browsers
+            },
+            error: function(xhr, status) {
+                if (xhr.status == 400) {
+                    alert("Someone already has that nickname.\n Try another?")
+                }
+            }
+        });
+    }
+}
+
+function changeGameField() {
+    size = $(this).val();
+    changeGameFieldWithSize();
+}
+
+function changeGameFieldWithSize() {
+    var textTd = "";
+    var resultTable = "";
+    for (var i = 0; i < size; i++) {
+       textTd += "<td></td>"; 
+    }
+
+    for (var i = 0; i < size; i++) {
+        resultTable += "<tr>" + textTd + "</tr>";
+    }
+
+    $(".gameField").html(resultTable);
+
+    $(".gameField td").click(function() {     
+        if ($(this).html()) {
+            $(this).html("");
+        } else {
+            $(this).html(yourFig);
+        }
+        var column_num = parseInt( $(this).index() ) + 1;
+        var row_num = parseInt( $(this).parent().index() )+1;    
+    });
 }

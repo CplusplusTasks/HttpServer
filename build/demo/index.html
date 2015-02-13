@@ -13,13 +13,21 @@
     <body>
 		
         <div id="registrationStep">
-            <p>Your name: <span class="myName"></span> </p>
             <p>Enter your nickname:</p> <input type="text" id="name"><br>
-            <button type="button" id="nextStep">Next</button>
+            <button type="button" id="signInButton">Next</button>
         </div>
 
+        <p id="myNameBlock">Your name: <span id="myName"></span> </p>
+
         <div id="intermediateStep">
-            <button type="button" id="createField">Next</button>
+            <button type="button" id="createFieldButton">CreateField</button>
+            <button type="button" id="joinButton">Join</button>
+        </div>
+
+        <div id="joinStep">
+            <button type="button" id="updListOfCreators">update list</button>
+            <table id="listOfCreator">
+            </table>
         </div>
 
         <div id="createFieldStep">
@@ -29,17 +37,28 @@
                 </select>
             </p>
             <p>
-                Choose player:
+                <table class="gameField" id="gameFieldPrev">
+                </table>
+            </p>
+
+            <p>
+                list of players:
             </p>
             <ul id="listOfPlayers">
-            </ul>        
-            <button type="button" id="startPlay">Next</button>
+            </ul>
+
+            <button type="button" id="createButton">create</button>
+            <button type="button" id="cancelButton">cancel</button>
+            <button type="button" id="updReadyButton">update</button>
+
+            <div>
+                <table id="listOfReadyPlayers"></table>
+            </div>
         </div>
 
         <div id="playFieldStep">
-            <p>Your name: <span class="myName"></span> </p>
             <div>
-                <table id="gameField">
+                <table class="gameField" id="gameField">
                 </table>
             </div>
         </div>

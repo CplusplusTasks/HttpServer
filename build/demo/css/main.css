@@ -23,7 +23,7 @@ body{
 	text-align:center;
 }
 
-#gameField td{
+.gameField td{
     font-size: 250%;
     color: #808080;
     margin: 0px;
@@ -37,16 +37,26 @@ body{
     text-align:center;
 }
 
-#gameField td:hover{
+.gameField td:hover{
     background: -moz-linear-gradient(top, #249ee4, #057cc0);
     background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#249ee4), to(#057cc0));
     color: yellow;
 }
 
-#gameField td:active
+.gameField td:active
 {
     background: -moz-linear-gradient(top, #057cc0, #249ee4);
     background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#057cc0), to(#249ee4));
+}
+
+#listOfReadyPlayers td:hover {
+    background: green;
+    cursor: pointer;
+}
+
+#listOfCreator td:hover {
+    background: green;
+    cursor: pointer;
 }
 
 /*table {*/
