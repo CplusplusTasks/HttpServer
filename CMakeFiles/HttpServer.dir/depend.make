@@ -8,11 +8,8 @@ CMakeFiles/HttpServer.dir/HttpRequest.cpp.o: HttpRequest.h
 CMakeFiles/HttpServer.dir/HttpRequest.cpp.o: Server.h
 CMakeFiles/HttpServer.dir/HttpRequest.cpp.o: Socket.h
 
-CMakeFiles/HttpServer.dir/HttpResponse.cpp.o: Client.h
-CMakeFiles/HttpServer.dir/HttpResponse.cpp.o: EpollLoop.h
 CMakeFiles/HttpServer.dir/HttpResponse.cpp.o: HttpResponse.cpp
 CMakeFiles/HttpServer.dir/HttpResponse.cpp.o: HttpResponse.h
-CMakeFiles/HttpServer.dir/HttpResponse.cpp.o: Server.h
 CMakeFiles/HttpServer.dir/HttpResponse.cpp.o: Socket.h
 
 CMakeFiles/HttpServer.dir/main.cpp.o: Client.h

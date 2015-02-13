@@ -6,84 +6,42 @@
 		
 		<link rel="stylesheet" href="css/main.css" type="text/css" media="all" />
 		<script src="js/jquery.min.js" type="text/javascript"></script>
+		<script src="js/main.js" type="text/javascript"></script>
 		
     </head>
 
     <body>
 		
-        <div>
-            <span>Select size of field: </span>
-            <select id="sizeField">
-            </select>
-
-            <table id="mainTable">
-            </table>
-
+        <div id="registrationStep">
+            <p>Your name: <span class="myName"></span> </p>
+            <p>Enter your nickname:</p> <input type="text" id="name"><br>
+            <button type="button" id="nextStep">Next</button>
         </div>
-        <div id="result"> </div>
 
+        <div id="intermediateStep">
+            <button type="button" id="createField">Next</button>
+        </div>
 
-    <script language="javascript" type="text/javascript">
-    $(document).ready(function(){
-        var arr = [];
-        for (var i = 2; i < 50; i++) {
-            arr.push({val : i, text : i});
-        }
-        var sel = $("#sizeField")
-        $(arr).each(function() {
-             sel.append($("<option>").attr('value',this.val).text(this.text));
-        });
+        <div id="createFieldStep">
+            <p>
+                <span>Select size of field: </span>
+                <select id="sizeField">
+                </select>
+            </p>
+            <p>
+                Choose player:
+            </p>
+            <ul id="listOfPlayers">
+            </ul>        
+            <button type="button" id="startPlay">Next</button>
+        </div>
 
-        var table = $("#mainTable")
-        sel.click(function() {
-            var size = $(this).val();
-            var textTd = "";
-            for (var i = 0; i < size; i++) {
-               textTd += "<td></td>"; 
-            }
-            var resultTable = "";
-            for (var i = 0; i < size; i++) {
-                resultTable += "<tr>" + textTd + "</tr>";
-            }
-
-            table.html(resultTable);
-
-            $("#mainTable td").click(function() {     
-         
-                var column_num = parseInt( $(this).index() ) + 1;
-                var row_num = parseInt( $(this).parent().index() )+1;    
-         
-                $("#result").html( "Row_num =" + row_num + "  ,  Rolumn_num ="+ column_num );   
-            });
-        });
-        sel.onClick();
-        
-    });
-
-    $('.sample1').click( function() {
-
-        $.ajax({
-          url: 'response.php?action=sample1',
-          success: function(data) {
-            $('.results').html(data);
-          }
-        });
-
-    });
-
-    $('.sample2').click( function() {
-
-        $.ajax({
-          type: 'POST',
-          url: 'response.php?action=sample2',
-          data: 'name=Andrew&nickname=Aramis',
-          success: function(data){
-            $('.results').html(data);
-          }
-        });
-
-    });
-
-    </script>
+        <div id="playFieldStep">
+            <p>Your name: <span class="myName"></span> </p>
+            <div>
+                <table id="gameField">
+                </table>
+            </div>
+        </div>
     </body>
 </html>

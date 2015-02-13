@@ -120,8 +120,8 @@ HttpResponse& HttpResponse::setWholeResponse(string wholeResponse) {
     return *this;
 }
 
-HttpResponse& HttpResponse::send(MyServer::Client* client) {
-    client->send(toString());    
+HttpResponse& HttpResponse::send(MyServer::Socket* socket) {
+    socket->send(toString());    
     return *this;
 }
 

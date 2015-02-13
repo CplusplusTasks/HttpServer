@@ -3,7 +3,7 @@
 #include <string>
 #include <ctime>
 #include <unordered_map>
-#include "Client.h"
+#include "Socket.h"
 #include <stdexcept>
 
 namespace MyHttpManager {
@@ -21,7 +21,7 @@ namespace MyHttpManager {
         HttpResponse& setMessage(std::string);
         HttpResponse& setDate(time_t);
         HttpResponse& setExtension(std::string);
-        HttpResponse& send(MyServer::Client*);
+        HttpResponse& send(MyServer::Socket*);
 
     private:
         std::string getCurTimeUTC(time_t) const;
