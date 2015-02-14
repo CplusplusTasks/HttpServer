@@ -2,6 +2,7 @@ FILE(REMOVE_RECURSE
   "CMakeFiles/HttpServer.dir/main.cpp.o"
   "CMakeFiles/HttpServer.dir/HttpResponse.cpp.o"
   "CMakeFiles/HttpServer.dir/HttpRequest.cpp.o"
+  "CMakeFiles/HttpServer.dir/GameServer.cpp.o"
   "HttpServer.pdb"
   "HttpServer"
 )

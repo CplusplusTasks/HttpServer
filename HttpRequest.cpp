@@ -143,16 +143,22 @@ vector<string> split(const string& str, char delim) {
    return result; // std::move() ? return value optimization =(
 }
 
+using namespace std;
+void HttpRequest::splitQuery(std::map<string, string>& toMap, string str) {
+    for (string curValue : split(str, '&')) {
+       vector<string> keyAndValue = split(curValue, '=');
+       if (keyAndValue.size() == 0)
+           throw invalid_argument("bad query");
+       toMap[keyAndValue[0]] =  keyAndValue.size() > 1 ? keyAndValue[1] : "";
+    }
+}
+
 void HttpRequest::fillOtherFields() {
     string::iterator questionPos = std::find(queryUrl.begin(), queryUrl.end(), '?');
     resourcePath = queryUrl;
     if (questionPos != queryUrl.end()) {
         string queryInUrl = string(questionPos + 1, queryUrl.end()); 
-        //std::cerr << "queryInUrl: " << queryInUrl << std::endl;
-        for (string curValue : split(queryInUrl, '&')) {
-           vector<string> keyAndValue = split(curValue, '=');
-           mapQueriesFromUrl[keyAndValue[0]] = keyAndValue[1];
-        }
+        splitQuery(mapQueriesFromUrl, queryInUrl);
         resourcePath = string(queryUrl.begin(), questionPos); 
     }
     
@@ -161,10 +167,7 @@ void HttpRequest::fillOtherFields() {
         extensionOfResource = string(last_dot.base(), questionPos);
     
     if (!postMessage.empty()) 
-        for (string curValue : split(postMessage, '&')) {
-           vector<string> keyAndValue = split(curValue, '=');
-           postMapQuery[keyAndValue[0]] = keyAndValue[1];
-        }
+        splitQuery(postMapQuery, postMessage);
 }
 
 // constructor

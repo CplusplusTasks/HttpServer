@@ -118,11 +118,35 @@ CMakeFiles/HttpServer.dir/HttpRequest.cpp.o.provides: CMakeFiles/HttpServer.dir/
 
 CMakeFiles/HttpServer.dir/HttpRequest.cpp.o.provides.build: CMakeFiles/HttpServer.dir/HttpRequest.cpp.o
 
+CMakeFiles/HttpServer.dir/GameServer.cpp.o: CMakeFiles/HttpServer.dir/flags.make
+CMakeFiles/HttpServer.dir/GameServer.cpp.o: GameServer.cpp
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/eugene/ClionProjects/HttpServer/CMakeFiles $(CMAKE_PROGRESS_4)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/HttpServer.dir/GameServer.cpp.o"
+	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/HttpServer.dir/GameServer.cpp.o -c /home/eugene/ClionProjects/HttpServer/GameServer.cpp
+
+CMakeFiles/HttpServer.dir/GameServer.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/HttpServer.dir/GameServer.cpp.i"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/eugene/ClionProjects/HttpServer/GameServer.cpp > CMakeFiles/HttpServer.dir/GameServer.cpp.i
+
+CMakeFiles/HttpServer.dir/GameServer.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/HttpServer.dir/GameServer.cpp.s"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/eugene/ClionProjects/HttpServer/GameServer.cpp -o CMakeFiles/HttpServer.dir/GameServer.cpp.s
+
+CMakeFiles/HttpServer.dir/GameServer.cpp.o.requires:
+.PHONY : CMakeFiles/HttpServer.dir/GameServer.cpp.o.requires
+
+CMakeFiles/HttpServer.dir/GameServer.cpp.o.provides: CMakeFiles/HttpServer.dir/GameServer.cpp.o.requires
+	$(MAKE) -f CMakeFiles/HttpServer.dir/build.make CMakeFiles/HttpServer.dir/GameServer.cpp.o.provides.build
+.PHONY : CMakeFiles/HttpServer.dir/GameServer.cpp.o.provides
+
+CMakeFiles/HttpServer.dir/GameServer.cpp.o.provides.build: CMakeFiles/HttpServer.dir/GameServer.cpp.o
+
 # Object files for target HttpServer
 HttpServer_OBJECTS = \
 "CMakeFiles/HttpServer.dir/main.cpp.o" \
 "CMakeFiles/HttpServer.dir/HttpResponse.cpp.o" \
-"CMakeFiles/HttpServer.dir/HttpRequest.cpp.o"
+"CMakeFiles/HttpServer.dir/HttpRequest.cpp.o" \
+"CMakeFiles/HttpServer.dir/GameServer.cpp.o"
 
 # External object files for target HttpServer
 HttpServer_EXTERNAL_OBJECTS =
@@ -130,6 +154,7 @@ HttpServer_EXTERNAL_OBJECTS =
 HttpServer: CMakeFiles/HttpServer.dir/main.cpp.o
 HttpServer: CMakeFiles/HttpServer.dir/HttpResponse.cpp.o
 HttpServer: CMakeFiles/HttpServer.dir/HttpRequest.cpp.o
+HttpServer: CMakeFiles/HttpServer.dir/GameServer.cpp.o
 HttpServer: CMakeFiles/HttpServer.dir/build.make
 HttpServer: CMakeFiles/HttpServer.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --red --bold "Linking CXX executable HttpServer"
@@ -142,6 +167,7 @@ CMakeFiles/HttpServer.dir/build: HttpServer
 CMakeFiles/HttpServer.dir/requires: CMakeFiles/HttpServer.dir/main.cpp.o.requires
 CMakeFiles/HttpServer.dir/requires: CMakeFiles/HttpServer.dir/HttpResponse.cpp.o.requires
 CMakeFiles/HttpServer.dir/requires: CMakeFiles/HttpServer.dir/HttpRequest.cpp.o.requires
+CMakeFiles/HttpServer.dir/requires: CMakeFiles/HttpServer.dir/GameServer.cpp.o.requires
 .PHONY : CMakeFiles/HttpServer.dir/requires
 
 CMakeFiles/HttpServer.dir/clean:

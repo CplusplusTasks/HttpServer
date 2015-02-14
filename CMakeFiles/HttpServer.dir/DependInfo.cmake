@@ -4,6 +4,7 @@ SET(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 SET(CMAKE_DEPENDS_CHECK_CXX
+  "/home/eugene/ClionProjects/HttpServer/GameServer.cpp" "/home/eugene/ClionProjects/HttpServer/CMakeFiles/HttpServer.dir/GameServer.cpp.o"
   "/home/eugene/ClionProjects/HttpServer/HttpRequest.cpp" "/home/eugene/ClionProjects/HttpServer/CMakeFiles/HttpServer.dir/HttpRequest.cpp.o"
   "/home/eugene/ClionProjects/HttpServer/HttpResponse.cpp" "/home/eugene/ClionProjects/HttpServer/CMakeFiles/HttpServer.dir/HttpResponse.cpp.o"
   "/home/eugene/ClionProjects/HttpServer/main.cpp" "/home/eugene/ClionProjects/HttpServer/CMakeFiles/HttpServer.dir/main.cpp.o"

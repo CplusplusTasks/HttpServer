@@ -34,6 +34,26 @@ queue
 sys/epoll.h
 -
 
+/home/eugene/ClionProjects/HttpServer/GameServer.cpp
+GameServer.h
+/home/eugene/ClionProjects/HttpServer/GameServer.h
+
+/home/eugene/ClionProjects/HttpServer/GameServer.h
+string
+-
+unordered_map
+-
+unordered_set
+-
+set
+-
+memory
+-
+vector
+-
+HttpRequest.h
+/home/eugene/ClionProjects/HttpServer/HttpRequest.h
+
 /home/eugene/ClionProjects/HttpServer/HttpRequest.h
 vector
 -
@@ -113,4 +133,8 @@ unordered_set
 -
 memory
 -
+iterator
+-
+GameServer.h
+/home/eugene/ClionProjects/HttpServer/GameServer.h
 

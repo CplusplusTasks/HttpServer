@@ -111,6 +111,30 @@ HttpServer/fast:
 	$(MAKE) -f CMakeFiles/HttpServer.dir/build.make CMakeFiles/HttpServer.dir/build
 .PHONY : HttpServer/fast
 
+GameServer.o: GameServer.cpp.o
+.PHONY : GameServer.o
+
+# target to build an object file
+GameServer.cpp.o:
+	$(MAKE) -f CMakeFiles/HttpServer.dir/build.make CMakeFiles/HttpServer.dir/GameServer.cpp.o
+.PHONY : GameServer.cpp.o
+
+GameServer.i: GameServer.cpp.i
+.PHONY : GameServer.i
+
+# target to preprocess a source file
+GameServer.cpp.i:
+	$(MAKE) -f CMakeFiles/HttpServer.dir/build.make CMakeFiles/HttpServer.dir/GameServer.cpp.i
+.PHONY : GameServer.cpp.i
+
+GameServer.s: GameServer.cpp.s
+.PHONY : GameServer.s
+
+# target to generate assembly for a file
+GameServer.cpp.s:
+	$(MAKE) -f CMakeFiles/HttpServer.dir/build.make CMakeFiles/HttpServer.dir/GameServer.cpp.s
+.PHONY : GameServer.cpp.s
+
 HttpRequest.o: HttpRequest.cpp.o
 .PHONY : HttpRequest.o
 
@@ -192,6 +216,9 @@ help:
 	@echo "... HttpServer"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
+	@echo "... GameServer.o"
+	@echo "... GameServer.i"
+	@echo "... GameServer.s"
 	@echo "... HttpRequest.o"
 	@echo "... HttpRequest.i"
 	@echo "... HttpRequest.s"

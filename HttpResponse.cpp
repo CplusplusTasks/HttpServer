@@ -59,6 +59,7 @@ namespace MyHttpManager {
         if (extension == "jpg") return "image/jpeg";
         if (extension == "jpeg") return "image/jpeg";
         if (extension == "png") return "image/png";
+        if (extension == "json") return "application/json";
         throw HttpResponseException("unknown extension: " + extension);
     }
 }

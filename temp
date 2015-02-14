@@ -1,0 +1,8 @@
+unordered_set<string> 
+creatorsInWaiting - создатели поля ожидают
+пока пользователь к ним подключится,
+после они могут выбрать того с кем играть
+
+unordered_map< string, unique_ptr<Player> > getPlayer;
+unordered_map<Player*, Player*> playPairs;
+unordered_map< string, vector<string> > getReadyPlayers;

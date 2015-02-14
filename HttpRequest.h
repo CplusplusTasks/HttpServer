@@ -28,6 +28,7 @@ namespace MyHttpManager {
         
     private:
         void fillOtherFields();
+        void splitQuery(std::map<std::string, std::string>&, std::string);
         void checkEndOfHeader(std::vector<char>::size_type&, std::vector<char> const& request);
 
         std::string header;

@@ -18,6 +18,7 @@
         </div>
 
         <p id="myNameBlock">Your name: <span id="myName"></span> </p>
+        <p id="partnerNameBlock">partner's name: <span id="partnerName"></span> </p>
 
         <div id="intermediateStep">
             <button type="button" id="createFieldButton">CreateField</button>
@@ -25,7 +26,7 @@
         </div>
 
         <div id="joinStep">
-            <button type="button" id="updListOfCreators">update list</button>
+            <button type="button" id="updListOfCreators">update</button>
             <table id="listOfCreator">
             </table>
         </div>
@@ -41,12 +42,6 @@
                 </table>
             </p>
 
-            <p>
-                list of players:
-            </p>
-            <ul id="listOfPlayers">
-            </ul>
-
             <button type="button" id="createButton">create</button>
             <button type="button" id="cancelButton">cancel</button>
             <button type="button" id="updReadyButton">update</button>
@@ -58,6 +53,7 @@
 
         <div id="playFieldStep">
             <div>
+                <p id="myTurn"></p>
                 <table class="gameField" id="gameField">
                 </table>
             </div>
