@@ -18,6 +18,7 @@ var numLose = 0;
 $(document).ready(function() {
     hideAllSteps();
     $("#myNameBlock").hide();
+    $("#readyPlayers").hide();
     $("#registrationStep").slideDown();
 
     $("#signInButton").click(signInOnClick);
@@ -66,7 +67,8 @@ function createFieldOnClick() {
 function createOnClick() {
     $("#createFieldStep *").attr("disabled", true);
     $("#cancelCreateButton").attr("disabled", false);
-    $("#updReadyButton").attr("disabled", false);
+    $("#readyPlayers").slideDown();
+    $("#listOfReadyPlayers").html("<tr><td>wait please...</td></tr>");
     
     var request = "name=" + person;
     request += "&size=" + fieldSize;
@@ -75,15 +77,16 @@ function createOnClick() {
         url: "create_field",
         data: request,
         success: function(data) {
-            $("#updReadyButton").click(updListOfReadyPlayers);
             updListOfReadyPlayers();
-            idUpdListOfPlayers = setInterval(updListOfReadyPlayers, 4000);
+            idUpdListOfPlayers = setInterval(updListOfReadyPlayers, 2000);
         }
     } );
 }
 
 function cancelCreateOnClick() {
     var request = "name=" + person;
+    $("#listOfReadyPlayers").html("");
+    $("#readyPlayers").slideUp();
     $.ajax({
         type: 'POST',
         url: "cancel_create_field",
@@ -125,8 +128,8 @@ function joinOnClick() {
     hideAllSteps();
     $("#joinStep").slideDown();
     updListOfCreators()
-    idUpdListOfCreators = setInterval(updListOfCreators, 4000);
-    $("#updListOfCreators").on("click", updListOfCreators);
+    idUpdListOfCreators = setInterval(updListOfCreators, 2000);
+    $("#updListOfCreatorsButton").on("click", updListOfCreators);
 }
 
 function updListOfCreators() {
@@ -140,6 +143,10 @@ function updListOfCreators() {
 
 // not implemnted block elements
 function joinWith() {
+    $("#joinStep").append("<p>wait please...</p>");
+    clearInterval(idUpdListOfCreators);
+    $("#joinStep *").attr("disabled", true);
+    $('#listOfCreator td').attr('onclick','').unbind('click');
     partnerName = $(this).text();
     var request = "name=" + person;
     request += "&with=" + partnerName;
@@ -173,6 +180,7 @@ function showPlayField() {
 }
 
 function playAgain() {
+    if (!gameNotStarted) return;
     resultTable = null;
     $.ajax({
         type: 'POST',
@@ -180,6 +188,7 @@ function playAgain() {
         data: "name=" + person,
         success: function(data) {
             gameNotStarted = false;
+            changeGameFieldWithSize();
             updPlayField();
             idUpdPlayField = setInterval(updPlayField, 200);
         }
@@ -243,7 +252,8 @@ function changeGameField() {
 // "creators:";
 function changeGameFieldWithSize() {
     if (lastStep) {
-        $("#gameField tr:nth-child(" + (lastStep.row + 1) + ")>td:nth-child(" + (lastStep.column + 1) + ")").html(lastStep.fig);
+        var element = $("#gameField tr:nth-child(" + (lastStep.row + 1) + ")>td:nth-child(" + (lastStep.column + 1) + ")");
+        element.html(lastStep.fig).css("color", "blue");
         lastStep = null;
     } else if (!resultTable) {
         resultTable = "";
@@ -259,14 +269,7 @@ function changeGameFieldWithSize() {
 
     $(".gameField td").click(function() {     
         var text = $(this).html();
-        if (gameNotStarted) {
-            if (text == " ") {
-                $(this).html(yourFig);
-            } else {
-                $(this).html(" ");
-            }
-            return;
-        }
+        if (gameNotStarted) return;
 
         if (myTurn) {
             if (text && text != " ") return;
@@ -284,6 +287,7 @@ function changeGameFieldWithSize() {
             });
             myTurn = false;
             idUpdPlayField = setInterval(updPlayField, 200);
+            $("#gameField *").css("color", "#808080");
         }
     });
 }

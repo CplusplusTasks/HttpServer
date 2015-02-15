@@ -6,8 +6,8 @@ using namespace std;
 const char GameServer::GameField::UNDEFINED;
 const char GameServer::GameField::FIG_X;
 const char GameServer::GameField::FIG_O;
-const int GameServer::GameField::dx[] = {-1, -1, 0, 1,  1,  1,  0, -1};
-const int GameServer::GameField::dy[] = { 0,  1, 1, 1,  0, -1, -1, -1};
+const int GameServer::GameField::dx[] = {-1, -1, 0,  1};
+const int GameServer::GameField::dy[] = { 0,  1, 1, 1};
 
 static string boolToString(bool b) {
     return b ? "true" : "false";
@@ -48,26 +48,34 @@ bool GameServer::GameField::isGood(int row, int column) {
            row < size && column < size;
 }
 
+int GameServer::GameField::getNumFig(int row, int column, int dx, int dy, char fig) {
+    int result = 0;
+    while(true) {
+        row += dx;
+        column += dy;
+        if (!isGood(row, column) || field[row][column] != fig) {
+            break;
+        }
+        result++;
+    }
+    return result;
+}
+
 void GameServer::GameField::setFig(int row, int column, char fig) {
     if (!isGood(row, column)) 
         throw invalid_argument("\n row=" + to_string(row) + 
-                                    "\n column=" + to_string(column) + 
-                                    "\n where size=" + to_string(size));
+                               "\n column=" + to_string(column) + 
+                               "\n where size=" + to_string(size));
     lastStep = {row, column};
     field[row][column] = fig;
     int cntDirecions = sizeof(dx) / sizeof(int);
 
-    for (int curDirection = 0; curDirection < cntDirecions && winner == UNDEFINED; ++curDirection) { 
-        int new_row = row; 
-        int new_column = column; 
-        winner = fig;
-        for (int i = 0; i < cntFigForWin - 1; ++i) {
-            new_row += dx[curDirection];
-            new_column += dy[curDirection];
-            if (!isGood(new_row, new_column) || field[new_row][new_column] != fig) {
-                winner = UNDEFINED;
-                break;
-            }
+    for (int curDir = 0; curDir < cntDirecions; ++curDir) { 
+        int numFigs = getNumFig(row, column, dx[curDir], dy[curDir], fig);
+        numFigs += getNumFig(row, column, -dx[curDir], -dy[curDir], fig);
+        if (1 + numFigs == cntFigForWin) {
+            winner = fig;
+            break;
         }
     }
 }

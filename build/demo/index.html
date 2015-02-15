@@ -23,6 +23,7 @@
             <span id="myName"></span> 
             <span id="myNumWins"></span> 
         </p>
+
         <p id="partnerNameBlock">partner's name: 
             <span id="partnerName"></span>
             <span id="partnerNumWins"></span>
@@ -34,7 +35,7 @@
         </div>
 
         <div id="joinStep">
-            <button type="button" id="updListOfCreators">update</button>
+            <button type="button" id="updListOfCreatorsButton">update</button>
             <table id="listOfCreator">
             </table>
         </div>
@@ -45,18 +46,20 @@
                 <select id="sizeField">
                 </select>
             </p>
+            <div id="readyPlayers">
+                <p>
+                    select one player from list:
+                </p>
+                <table id="listOfReadyPlayers"></table>
+            </div>
+            <button type="button" id="createButton">create</button>
+            <button type="button" id="cancelCreateButton">cancel</button>
+
             <p>
                 <table class="gameField" id="gameFieldPrev">
                 </table>
             </p>
 
-            <button type="button" id="createButton">create</button>
-            <button type="button" id="cancelCreateButton">cancel</button>
-            <button type="button" id="updReadyButton">update</button>
-
-            <div>
-                <table id="listOfReadyPlayers"></table>
-            </div>
         </div>
 
         <div id="playFieldStep">

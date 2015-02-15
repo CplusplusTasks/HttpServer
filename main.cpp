@@ -36,7 +36,7 @@ int main() {
     GameServer gameServer;
     try {
         Server server(&epoll, "10.0.0.12", PORT);
-        server.set_callback_on_accept([&server] (Client* client) {
+        server.set_callback_on_accept([&server] (Client*) {
             //cerr << "new: " << client->get_sfd() << endl;
         });
 
@@ -93,7 +93,6 @@ int main() {
                 if (resPath == "/") {
                     path += "index.html";
                 }
-                cerr << resExtension << endl;
                 message = getFile(path);
             } 
 
@@ -105,7 +104,7 @@ int main() {
                 .send(client);
         });
 
-        server.set_callback_on_close([&] (Client* client) {
+        server.set_callback_on_close([&] (Client*) {
             //cerr << "close: " << client->get_sfd() << endl;
             //if (server.getCountClients() == 1) {
                 //server.shut_down();

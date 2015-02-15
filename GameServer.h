@@ -64,6 +64,7 @@ public:
 
 private:
     bool isGood(int, int); 
+    int getNumFig(int row, int column, int dx, int dy, char fig);
 
     const static int dx[];
     const static int dy[];
