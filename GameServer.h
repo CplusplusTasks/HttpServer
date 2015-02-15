@@ -7,7 +7,6 @@
 #include <memory>
 #include <vector>
 #include "HttpRequest.h"
-
 struct GameServer {
 public:
     struct Player;
@@ -25,15 +24,17 @@ public:
     int startPlay(std::string player, std::string creator);
 
     // check if creator accept invite from player. return not empty string if true
-    std::string checkIfAccept(std::string name); 
+    bool checkIfAccept(std::string name); 
 
     std::string getAllPlayers();
     std::string getCreators();
     std::string getReadyPlayers(std::string creator);
     std::string getField(std::string name);
     bool getTurn(std::string name);
+    std::string getGameStateJson(std::string name);
 
     void putFig(std::string name, int row, int column);
+    void restartGame(std::string name);
 private:
     template<typename InputIterator>
     std::string createJsonArray(InputIterator begin, InputIterator end);
@@ -52,25 +53,32 @@ public:
     const static char UNDEFINED = ' ';
     const static char FIG_X = 'X';
     const static char FIG_O = 'O';
-    const static int dx[];
-    const static int dy[];
 
     GameField(int size);
     void setFig(int row, int column, char fig); 
     char getWinner(); // one of 3 possible variants
     int getSize(); 
+    std::pair<int, int> getLastStep();
     std::vector< std::vector<char> >& getField();
+    void restart();
+
 private:
     bool isGood(int, int); 
+
+    const static int dx[];
+    const static int dy[];
     const int size;
     int cntFigForWin;
     char winner;
+    std::pair<int, int> lastStep;
     std::vector< std::vector<char> > field;
 };
 
 struct GameServer::Player {
 public:
-    Player();
+    Player(std::string name);
+    std::string name;
+    int numWins;
     char myFig;
     bool creator;
     bool myTurn;

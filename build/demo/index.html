@@ -4,6 +4,8 @@
         <meta charset="utf-8" />
         <title>AJAX</title>
 		
+
+        <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon"> 
 		<link rel="stylesheet" href="css/main.css" type="text/css" media="all" />
 		<script src="js/jquery.min.js" type="text/javascript"></script>
 		<script src="js/main.js" type="text/javascript"></script>
@@ -17,8 +19,14 @@
             <button type="button" id="signInButton">Next</button>
         </div>
 
-        <p id="myNameBlock">Your name: <span id="myName"></span> </p>
-        <p id="partnerNameBlock">partner's name: <span id="partnerName"></span> </p>
+        <p id="myNameBlock">Your name: 
+            <span id="myName"></span> 
+            <span id="myNumWins"></span> 
+        </p>
+        <p id="partnerNameBlock">partner's name: 
+            <span id="partnerName"></span>
+            <span id="partnerNumWins"></span>
+        </p>
 
         <div id="intermediateStep">
             <button type="button" id="createFieldButton">CreateField</button>
@@ -43,7 +51,7 @@
             </p>
 
             <button type="button" id="createButton">create</button>
-            <button type="button" id="cancelButton">cancel</button>
+            <button type="button" id="cancelCreateButton">cancel</button>
             <button type="button" id="updReadyButton">update</button>
 
             <div>
@@ -56,6 +64,7 @@
                 <p id="myTurn"></p>
                 <table class="gameField" id="gameField">
                 </table>
+                <button id="playAgainButton"> again </button>
             </div>
         </div>
     </body>

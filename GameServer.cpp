@@ -1,4 +1,5 @@
 #include "GameServer.h"
+#include <cassert>
 
 using namespace std;
 
@@ -7,6 +8,10 @@ const char GameServer::GameField::FIG_X;
 const char GameServer::GameField::FIG_O;
 const int GameServer::GameField::dx[] = {-1, -1, 0, 1,  1,  1,  0, -1};
 const int GameServer::GameField::dy[] = { 0,  1, 1, 1,  0, -1, -1, -1};
+
+static string boolToString(bool b) {
+    return b ? "true" : "false";
+}
 
 template<typename InputIterator>
 string GameServer::createJsonArray(InputIterator beg, InputIterator end) {
@@ -23,7 +28,8 @@ string GameServer::createJsonArray(InputIterator beg, InputIterator end) {
 
 GameServer::GameField::GameField(int size) :
     size(size),
-    winner(UNDEFINED)
+    winner(UNDEFINED),
+    lastStep{-1, -1}
 {
     cntFigForWin = 3;
     if (size > 4) {
@@ -44,20 +50,21 @@ bool GameServer::GameField::isGood(int row, int column) {
 
 void GameServer::GameField::setFig(int row, int column, char fig) {
     if (!isGood(row, column)) 
-        throw std::invalid_argument("\n row=" + to_string(row) + 
+        throw invalid_argument("\n row=" + to_string(row) + 
                                     "\n column=" + to_string(column) + 
                                     "\n where size=" + to_string(size));
+    lastStep = {row, column};
     field[row][column] = fig;
     int cntDirecions = sizeof(dx) / sizeof(int);
+
     for (int curDirection = 0; curDirection < cntDirecions && winner == UNDEFINED; ++curDirection) { 
         int new_row = row; 
         int new_column = column; 
         winner = fig;
-        for (int i = 0; i < cntFigForWin; ++i) {
+        for (int i = 0; i < cntFigForWin - 1; ++i) {
             new_row += dx[curDirection];
             new_column += dy[curDirection];
-            if (!isGood(new_row, new_column)) break;
-            if (field[new_row][new_column] != fig) {
+            if (!isGood(new_row, new_column) || field[new_row][new_column] != fig) {
                 winner = UNDEFINED;
                 break;
             }
@@ -75,28 +82,42 @@ vector<vector<char>>& GameServer::GameField::getField() {
 
 
 char GameServer::GameField::getWinner() {
-    return winner;    
+    return winner;
 }
 
-int GameServer::addPlayer(string newName) {
-    //cerr << "newName: " << newName << endl;
-    //cerr << "sfd: " << client->get_sfd() << endl;
-    if (usedNames.count(newName) != 0) return 400;
+pair<int, int> GameServer::GameField::getLastStep() {
+    return lastStep;
+}
 
-    usedNames.insert(newName);
-    getPlayer[newName] = unique_ptr<Player>(new Player);
-    return 200;
+void GameServer::GameField::restart() {
+    for (int i = 0; i < size; ++i) {
+        for (int j = 0; j < size; ++j) {
+            field[i][j] = UNDEFINED;
+        }
+    }
+    winner = UNDEFINED;
+    lastStep = {-1, -1};
 }
 
 void GameServer::Player::setFig(int row, int column) {
     gameField->setFig(row, column, myFig); 
 }
 
-GameServer::Player::Player() :
+GameServer::Player::Player(string name) :
+    name(name),
     myFig(GameServer::GameField::FIG_O),
     creator(false),
     myTurn(false),
     gameField(nullptr) {}
+
+
+int GameServer::addPlayer(string newName) {
+    if (usedNames.count(newName) != 0) return 400;
+
+    usedNames.insert(newName);
+    getPlayer[newName] = unique_ptr<Player>(new Player(newName));
+    return 200;
+}
 
 void GameServer::deletePlayer(string name, string partnerName) {
     Player* player = getPlayer[name].get();
@@ -116,7 +137,6 @@ void GameServer::deletePlayer(string name, string partnerName) {
     }
 }
 
-using namespace std;
 void GameServer::setCreator(string name, int fieldSize) {
     Player* player = getPlayer[name].get();
     if (player == nullptr) return;
@@ -159,14 +179,9 @@ int GameServer::startPlay(string player, string creator) {
     return 200;
 }
 
-//check if creator accept invite from player
-string GameServer::checkIfAccept(std::string name){
+bool GameServer::checkIfAccept(string name){
     Player* player = getPlayer[name].get();
-    if (playPairs.count(player) == 0) 
-        return "";
-    int size = player->gameField->getSize();
-    string message="size=" + to_string(size);
-    return message;
+    return playPairs.count(player);
 }
 
 string GameServer::getAllPlayers() {
@@ -187,8 +202,9 @@ string GameServer::getReadyPlayers(string creator) {
 }
 
 string GameServer::getField(string name) {
+    if (getPlayer.count(name) == 0) throw invalid_argument("unknown name");
     Player* player = getPlayer[name].get();
-    if (player == nullptr || player->gameField == nullptr) return "error";
+    if (player->gameField == nullptr) throw invalid_argument("unknown name");
     
     vector<vector<char>>& field = player->gameField->getField();
     string result = "[";
@@ -201,13 +217,76 @@ string GameServer::getField(string name) {
     return result;
 }
 
-void GameServer::putFig(std::string name, int row, int column) {
+void GameServer::restartGame(std::string name) {
+    Player* player = getPlayer[name].get();
+    if (player->gameField->getWinner() == GameField::UNDEFINED) return;
+    int cntWins = player->numWins + playPairs[player]->numWins;
+    player->myTurn = true ^ cntWins % 2;
+    playPairs[player]->myTurn = false ^ cntWins % 2;
+    if (!player->creator) {
+        swap(player->myTurn, playPairs[player]->myTurn);
+    } 
+    player->gameField->restart();
+}
+
+string GameServer::getGameStateJson(string name) {
+    string result;
+    if (getPlayer.count(name) == 0) return "";
+    Player* player = getPlayer[name].get();
+    
+    result = "{"
+             "\"allPlayers\": " + getAllPlayers() + ",";
+    
+    if (playPairs.count(player) == 1) {
+       GameField* gameField = player->gameField.get();
+
+       result += "\"myTurn\": " + boolToString(player->myTurn) + ","
+                 "\"fieldSize\": " + to_string(player->gameField->getSize()) + ","
+                 "\"myFig\": \"" + player->myFig + "\","
+                 "\"numWins\": " + to_string(player->numWins) + ",";
+
+       if (gameField->getWinner() != GameField::UNDEFINED) {
+           string iWin = gameField->getWinner() == player->myFig ? "true" : "false";
+           cerr << "win: " << iWin << endl;
+           result += "\"win\": " + iWin + ",";
+       }
+
+       if (player->myTurn) {
+           pair<int, int> lastStep = gameField->getLastStep(); 
+           if (lastStep.first != -1) {
+               int row = lastStep.first;
+               int column = lastStep.second;
+               char fig = gameField->getField()[row][column];
+               result += "\"lastStep\": {"
+                         "\"row\": " + to_string(row) + ","
+                         "\"column\": " + to_string(column) + ","
+                         "\"fig\": \"" + fig + "\"},";
+            }
+        }
+    } else {
+        if (player->creator) {
+                result += "\"readyPlayers\": " + getReadyPlayers(name) + ",";
+        } else {
+            result += "\"creators\": " + getCreators() + ",";
+        }
+    }    
+    result.pop_back();
+    result += "}";
+    
+    return result;
+}
+
+void GameServer::putFig(string name, int row, int column) {
     Player* player = getPlayer[name].get();
     player->setFig(row, column);
     player->myTurn = false;
     playPairs[player]->myTurn = true;
-}
 
-bool GameServer::getTurn(string name) {
-    return getPlayer[name]->myTurn;
+    if (player->gameField->getWinner() != GameServer::GameField::UNDEFINED) {
+        if (player->gameField->getWinner() == player->myFig) {
+            player->numWins++;         
+        } else {
+            playPairs[player]->numWins++;
+        }
+    }
 }

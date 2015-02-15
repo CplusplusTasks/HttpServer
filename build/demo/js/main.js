@@ -1,4 +1,3 @@
-kj
 var wasCleaned = false;
 var person = null;
 var partnerName;
@@ -7,28 +6,83 @@ var idUpdListOfCreators;
 var idUpdListOfPlayers;
 var idWaitingPlayer;
 var idUpdPlayField;
-var size;
+var fieldSize;
 var gameNotStarted = true;
 var myTurn;
-var gameField = null;
+var lastStep = null;
+var resultTable = null;
+var iWin = null;
+var numWins = 0;
+var numLose = 0;
 
 $(document).ready(function() {
     hideAllSteps();
+    $("#myNameBlock").hide();
     $("#registrationStep").slideDown();
 
     $("#signInButton").click(signInOnClick);
-
-    $("#createFieldButton").click(createFieldOnClick);
-    $("#createButton").click(createOnClick);
-    $("#cancelButton").click(cancelOnClick);
-
-    $("#joinButton").click(joinOnClick);
-    $("#updListOfCreators").on("click", updListOfCreater);
-
-    $("#updReadyButton").on("click", updListOfReadyPlayers);
 });
 
-function cancelOnClick() {
+function signInOnClick() {
+    person = $("#name").val();
+    var request = "name=" + person;
+    if (person) { //person !=null, != ""
+        $.ajax({
+            type: 'POST',
+            url: "new_player",
+            data: request,
+            success: function(data) {
+                $("#myName").html(person);
+                hideAllSteps();
+                $("#intermediateStep").slideDown();
+
+                $("#createFieldButton").click(createFieldOnClick);
+                $("#joinButton").click(joinOnClick);
+
+                $(window).on('beforeunload', pageCleanup); // only for Chrome
+                $(window).on("unload", pageCleanup); // for other browsers
+            },
+            error: function(xhr, status) {
+                if (xhr.status == 400) {
+                    alert("Someone already has that nickname.\n Try another?")
+                }
+            }
+        });
+    }
+}
+
+function createFieldOnClick() {
+    hideAllSteps();
+    $("#createFieldStep").slideDown();
+    selector = $("#sizeField");
+    initSelectorOfSizeField(selector);
+    selector.on("change", changeGameField);
+    selector.change();
+
+    $("#createButton").click(createOnClick);
+    $("#cancelCreateButton").click(cancelCreateOnClick);
+}
+
+function createOnClick() {
+    $("#createFieldStep *").attr("disabled", true);
+    $("#cancelCreateButton").attr("disabled", false);
+    $("#updReadyButton").attr("disabled", false);
+    
+    var request = "name=" + person;
+    request += "&size=" + fieldSize;
+    $.ajax({
+        type: 'POST',
+        url: "create_field",
+        data: request,
+        success: function(data) {
+            $("#updReadyButton").click(updListOfReadyPlayers);
+            updListOfReadyPlayers();
+            idUpdListOfPlayers = setInterval(updListOfReadyPlayers, 4000);
+        }
+    } );
+}
+
+function cancelCreateOnClick() {
     var request = "name=" + person;
     $.ajax({
         type: 'POST',
@@ -40,44 +94,12 @@ function cancelOnClick() {
     });
 }
 
-function createOnClick() {
-    $("#createFieldStep *").attr("disabled", true);
-    $("#cancelButton").attr("disabled", false);
-    $("#updReadyButton").attr("disabled", false);
-    
-    var request = "name=" + person;
-    request += "&size=" + size;
-    $.ajax({
-        type: 'POST',
-        url: "create_field",
-        data: request,
-        success: function(data) {
-            updListOfReadyPlayers();
-            idUpdListOfPlayers = setInterval(updListOfReadyPlayers, 4000);
-        }
-    });
-}
-
-function createMessageFromJson(data, begin, end) {
-    var array = eval(data);
-    var message = "";
-    for (var i = 0; i < array.length; ++i) {
-       message += begin + array[i] + end;
-    }
-    return message;
-}
-
-function updListOfReadyPlayers() {
-    var request = "name=" + person;
-    $.ajax({
-        type: 'POST',
-        url: "get_ready_players",
-        success: function(data) {
-            var message = createMessageFromJson(data, "<tr><td>", "</td></tr>");
-            $("#listOfReadyPlayers").html(message);
-            $("#listOfReadyPlayers td").on("click", playWith);
-        },
-        data: request
+function updListOfReadyPlayers()  {
+    getGameState(function(data) {
+        var readyPlayers = data.readyPlayers;
+        var message = createMessageFromJson(readyPlayers, "<tr><td>", "</td></tr>");
+        $("#listOfReadyPlayers").html(message);
+        $("#listOfReadyPlayers td").on("click", playWith);
     });
 }
 
@@ -99,38 +121,20 @@ function playWith() {
     });
 }
 
-function hideAllSteps() {
-    $("#registrationStep").hide();
-    $("#myNameBlock").hide();
-    $("#partnerNameBlock").hide();
-    $("#intermediateStep").hide();
-    $("#createFieldStep").hide();
-    $("#playFieldStep").hide();
-    $("#joinStep").hide();
-}
-
 function joinOnClick() {
     hideAllSteps();
     $("#joinStep").slideDown();
-    updListOfCreater()
-    idUpdListOfCreators = setInterval(updListOfCreater, 4000);
+    updListOfCreators()
+    idUpdListOfCreators = setInterval(updListOfCreators, 4000);
+    $("#updListOfCreators").on("click", updListOfCreators);
 }
 
-function updListOfCreater() {
-    $.ajax({
-        type: 'POST',
-        url: 'get_creators',
-        data: "",
-        success: function(data) {
-            var message = createMessageFromJson(data, "<tr><td>", "</td></tr>");
-            $('#listOfCreator').html(message);
-            $('#listOfCreator td').on("click", joinWith);
-        },
-        error: function(xhr, status) {
-            alert(xhr.status);
-            alert(status);
-        }
- 
+function updListOfCreators() {
+    getGameState(function(data) {
+        var creators = data.creators;
+        var message = createMessageFromJson(creators, "<tr><td>", "</td></tr>");
+        $('#listOfCreator').html(message);
+        $('#listOfCreator td').on("click", joinWith);
     });
 }
 
@@ -144,95 +148,197 @@ function joinWith() {
         url: 'join_with',
         data: request,
         success: function(data) {
-            idWaitingPlayer = setInterval(checkIfAccept, 1000);
+            idWaitingPlayer = setInterval(checkIfAccept, 200);
         }
     });
 }
 
 function checkIfAccept() {
-    var request = "name=" + person;
-    $.ajax({
-        type: 'POST',
-        url: 'check_if_accept',
-        data: request,
-        success: function(data) {
-            clearInterval(idWaitingPlayer);
-            clearInterval(idUpdListOfCreators);
-            connectWithCreator(data);
-        }
+    getGameState(function(data) {
+        if (!data.fieldSize) return;
+        clearInterval(idWaitingPlayer);
+        clearInterval(idUpdListOfCreators);
+        connectWithCreator(data);
     });
 }
 
 function showPlayField() {
-    $("#myNameBlock").slideDown();
     $("#playFieldStep").slideDown();
     $("#partnerNameBlock").slideDown();
     $("#partnerName").html(partnerName);
+    $("#playAgainButton").click(playAgain);
+
     gameNotStarted = false;
-    idUpdPlayField = setInterval(updPlayField, 1000);
+    idUpdPlayField = setInterval(updPlayField, 200);
+}
+
+function playAgain() {
+    resultTable = null;
+    $.ajax({
+        type: 'POST',
+        url: "play_again",
+        data: "name=" + person,
+        success: function(data) {
+            gameNotStarted = false;
+            updPlayField();
+            idUpdPlayField = setInterval(updPlayField, 200);
+        }
+    });
 }
 
 function updPlayField() {
-    var request = "name=" + person;
-    $.ajax({
-        type: 'POST',
-        url: 'get_play_field',
-        data: request,
-        success: function(data) {
-            gameField = eval(data);
+    getGameState(function(data) {
+        if (gameNotStarted) return;
+        lastStep = data.lastStep;
+        myTurn = data.myTurn;
+        yourFig = data.myFig;
+        iWin = data.win;
+        if (iWin != undefined) {
             changeGameFieldWithSize();
-        }
-    });
-    updTurn();
-}
-
-function updTurn() {
-    var request = "name=" + person;
-    $.ajax({
-        type: 'POST',
-        url: 'get_turn',
-        data: request,
-        success: function(data) {
-            $("#myTurn").html("Its your turn");
-            myTurn = true;
-            clearInterval(idUpdPlayField);
-        },
-        error: function(xhr, status) {
-            if (xhr.status == 400) {
-                $("#myTurn").html("Its " + partnerName + "'s turn, wait...");
-                if (myTurn) {
-                    idUpdPlayField = setInterval(updPlayField, 1000);
-                }
-                myTurn = false;
+            if (iWin == true) {
+                alert("You win!");
+                numWins++;
+            } else if (iWin == false) {
+                alert("You lose!");
+                numLose++;
             }
+            $("#myNumWins").html(numWins);
+            $("#partnerNumWins").html(numLose);
+            clearInterval(idUpdPlayField);
+            gameNotStarted = true;
+            myTurn = false;
+            return;
         }
+        if (myTurn) {
+            $("#myTurn").html("Its your turn");
+            clearInterval(idUpdPlayField);
+        } else {
+            $("#myTurn").html("Its " + partnerName + "'s turn, wait...");
+        }
+        changeGameFieldWithSize();
     });
 }
 
 function connectWithCreator(data) {
-    yourFig = "O";
-    myTurn = false;
-    var response = data.split("&");
-    var response_map = {};
-    for (var i = 0; i < response.length; ++i) {
-        var temp = response[i].split("=");
-        response_map[temp[0]] = temp[1];
-    }
-    size = response_map["size"];
+    myTurn = data.myTurn;
+    yourFig = data.myFig;
+    fieldSize = data.fieldSize;
+    resultTable = null;
     hideAllSteps();
     showPlayField();
     changeGameFieldWithSize();
 }
 
-function createFieldOnClick() {
-    hideAllSteps();
-    $("#createFieldStep").slideDown();
-    $("#myNameBlock").slideDown();
-    selector = $("#sizeField")
-    initSelectorOfSizeField(selector);
-    selector.on("change", changeGameField);
-    selector.change()
+function changeGameField() {
+    fieldSize = $(this).val();
+    resultTable = null;
+    changeGameFieldWithSize();
 }
+
+// "allPlayers: ";
+// "myTurn: ";
+// "fieldSize: "
+// "lastStep: {row, column, fig},";
+// "readyPlayers: ";
+// "creators:";
+function changeGameFieldWithSize() {
+    if (lastStep) {
+        $("#gameField tr:nth-child(" + (lastStep.row + 1) + ")>td:nth-child(" + (lastStep.column + 1) + ")").html(lastStep.fig);
+        lastStep = null;
+    } else if (!resultTable) {
+        resultTable = "";
+        for (var i = 0; i < fieldSize; ++i) {
+            resultTable += "<tr>";
+            for (var j = 0; j < fieldSize; ++j) {
+                resultTable += "<td> </td>";
+            }
+            resultTable += "</tr>";
+        }
+        $(".gameField").html(resultTable);
+    }
+
+    $(".gameField td").click(function() {     
+        var text = $(this).html();
+        if (gameNotStarted) {
+            if (text == " ") {
+                $(this).html(yourFig);
+            } else {
+                $(this).html(" ");
+            }
+            return;
+        }
+
+        if (myTurn) {
+            if (text && text != " ") return;
+            var column = parseInt( $(this).index() );
+            var row = parseInt( $(this).parent().index() );    
+            $(this).html(yourFig);
+
+            var request = "name=" + person;
+            request += "&row=" + row;
+            request += "&column=" + column;
+            $.ajax({
+                type: 'POST',
+                url: "put_fig",
+                data: request,
+            });
+            myTurn = false;
+            idUpdPlayField = setInterval(updPlayField, 200);
+        }
+    });
+}
+
+
+function hideAllSteps() {
+    $("#myNameBlock").slideDown();
+
+    $("#registrationStep").hide();
+    $("#partnerNameBlock").hide();
+    $("#intermediateStep").hide();
+    $("#createFieldStep").hide();
+    $("#playFieldStep").hide();
+    $("#joinStep").hide();
+}
+
+function getGameState(callbackOnSuccess) {
+    request = "name=" + person
+    $.ajax({
+        type: 'POST',
+        url: "get_game_state",
+        data: request,
+        success: callbackOnSuccess,
+        error: function(xhr, status) {
+            //alert("ERRROR");
+            //alert(xhr.statusText);
+            //alert(xhr.responseText);
+            //alert(xhr.status);
+            //alert(thrownError);
+        }
+    });
+}
+
+function createMessageFromJson(data, begin, end) {
+    var array = data;
+    var message = "";
+    for (var i = 0; i < array.length; ++i) {
+       message += begin + array[i] + end;
+    }
+    return message;
+}
+
+function initSelectorOfSizeField(selector) {
+    var arr = [];
+    for (var i = 2; i < 50; i++) {
+        arr.push({val : i, text : i});
+    }
+    $(arr).each(function() {
+        if (this.val == 3) {
+             selector.append($("<option selected='selected'>").attr('value',this.val).text(this.text));
+        } else {
+             selector.append($("<option>").attr('value',this.val).text(this.text));
+        }
+    });
+} 
 
 function pageCleanup() {
     if (wasCleaned || !person) return;
@@ -251,89 +357,3 @@ function pageCleanup() {
     return;
 }
 
-function initSelectorOfSizeField(selector) {
-    var arr = [];
-    for (var i = 2; i < 50; i++) {
-        arr.push({val : i, text : i});
-    }
-    $(arr).each(function() {
-        if (this.val == 3) {
-             selector.append($("<option selected='selected'>").attr('value',this.val).text(this.text));
-        } else {
-             selector.append($("<option>").attr('value',this.val).text(this.text));
-        }
-    });
-} 
-
-function signInOnClick() {
-    person = $("#name").val();
-    if (person) { //person !=null, != ""
-        $.ajax({
-            type: 'POST',
-            url: "new_player",
-            data: 'name=' + person,
-            success: function(data) {
-                $("#myName").html(person);
-                hideAllSteps();
-                $("#myNameBlock").slideDown();
-                $("#intermediateStep").slideDown();
-
-                $(window).on('beforeunload', pageCleanup); // only for Chrome
-                $(window).on("unload", pageCleanup); // for other browsers
-            },
-            error: function(xhr, status) {
-                if (xhr.status == 400) {
-                    alert("Someone already has that nickname.\n Try another?")
-                }
-            }
-        });
-    }
-}
-
-function changeGameField() {
-    size = $(this).val();
-    changeGameFieldWithSize();
-}
-
-function changeGameFieldWithSize() {
-    var resultTable = "";
-    for (var i = 0; i < size; i++) {
-        resultTable += "<tr>";
-        for (var j = 0; j < size; j++) {
-            var fig = gameField == null ? ' ' : gameField[i][j];
-            resultTable += "<td>" + fig + "</td>";
-        }
-        resultTable += "</tr>";
-    }
-
-    $(".gameField").html(resultTable);
-
-    $(".gameField td").click(function() {     
-        var text = $(this).html();
-        if (gameNotStarted) {
-            if (text == "") {
-                $(this).html(yourFig);
-            } else {
-                $(this).html("");
-            }
-            return;
-        }
-
-        if (myTurn) {
-            if (text && text != " ") return;
-            var column = parseInt( $(this).index() );
-            var row = parseInt( $(this).parent().index() );    
-            $(this).html(yourFig);
-            var request = "name=" + person;
-            request += "&row=" + row;
-            request += "&column=" + column;
-            $.ajax({
-                type: 'POST',
-                url: "put_fig",
-                data: request,
-            });
-            myTurn = false;
-            idUpdPlayField = setInterval(updPlayField, 1000);
-        }
-    });
-}

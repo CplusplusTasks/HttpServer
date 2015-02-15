@@ -35,9 +35,9 @@ int main() {
     EpollLoop epoll;
     GameServer gameServer;
     try {
-        Server server(&epoll, "", PORT);
+        Server server(&epoll, "10.0.0.12", PORT);
         server.set_callback_on_accept([&server] (Client* client) {
-            cerr << "new: " << client->get_sfd() << endl;
+            //cerr << "new: " << client->get_sfd() << endl;
         });
 
         server.set_callback_on_receive([&server, &gameServer] (Client* client) {
@@ -50,14 +50,14 @@ int main() {
             auto queries = request.getPostMapQuery();
 
             if (resPath == "/new_player") {
-                gameServer.addPlayer(queries["name"]);
+                statusCode = gameServer.addPlayer(queries["name"]);
             } else if (resPath == "/leave_game") {
                 string name = queries["name"]; 
                 string partnerName = queries["with"]; 
                 gameServer.deletePlayer(name, partnerName);
                 cerr << "LEAVE: " << name << endl;
             } else if (resPath == "/create_field") {
-                size_t fieldSize = stoi(queries["size"]);
+                int fieldSize = stoi(queries["size"]);
                 string name = queries["name"];
                 gameServer.setCreator(name, fieldSize);
             } else if (resPath == "/join_with") {
@@ -72,32 +72,17 @@ int main() {
                  gameServer.cancelCreator(queries["name"]);
             } else if (resPath == "/put_fig") {
                 string name = queries["name"];
-                size_t row = stoi(queries["row"]);
-                size_t column = stoi(queries["column"]);
+                int row = stoi(queries["row"]);
+                int column = stoi(queries["column"]);
                 gameServer.putFig(name, row, column);
-            } else if (resPath == "/check_if_accept") {
+            } else if (resPath == "/play_again") {
+                cerr << "again" << endl;
                 string name = queries["name"];
-                message = gameServer.checkIfAccept(name);
-                if (message.empty())
-                    statusCode = 400;
-            } else if (resPath == "/get_creators") {
-                message = gameServer.getCreators();
-                resExtension = "json";
-            } else if (resPath == "/get_all_players") {
-                message = gameServer.getAllPlayers();
-                resExtension = "json";
-            } else if (resPath == "/get_ready_players") {
-                message = gameServer.getReadyPlayers(queries["name"]);
-                resExtension = "json";
-            } else if (resPath == "/get_play_field") {
+                gameServer.restartGame(name); 
+            } else if (resPath == "/get_game_state") {
                 string name = queries["name"];
-                message = gameServer.getField(name);
+                message = gameServer.getGameStateJson(name);
                 resExtension = "json";
-            } else if (resPath == "/get_turn") {
-                string name = queries["name"];
-                if (!gameServer.getTurn(name)) {
-                    statusCode = 400;
-                }
             } else {
                 string path = PREFIX + "demo" + resPath;
                 resExtension = request.getExtensionOfResource();
@@ -108,6 +93,7 @@ int main() {
                 if (resPath == "/") {
                     path += "index.html";
                 }
+                cerr << resExtension << endl;
                 message = getFile(path);
             } 
 
@@ -120,7 +106,7 @@ int main() {
         });
 
         server.set_callback_on_close([&] (Client* client) {
-            cerr << "close: " << client->get_sfd() << endl;
+            //cerr << "close: " << client->get_sfd() << endl;
             //if (server.getCountClients() == 1) {
                 //server.shut_down();
             //}
