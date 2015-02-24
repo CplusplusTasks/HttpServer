@@ -49,7 +49,7 @@ void TcpClient::close_notify() {
 void TcpClient::close() {
     safely_close_socket(cur_loc, false);
     epoll->close_socket(sfd);
-    parent->close_client(sfd);
+    parent->remove_client(sfd);
 }
 
 bool TcpClient::is_valid() const {
@@ -155,7 +155,7 @@ void TcpClient::notify_all() {
     }
     if (!valid) return;
     epoll->close_socket(sfd);
-    parent->close_client(sfd);
+    parent->remove_client(sfd);
 }
 
 TcpClient::TcpClient(TcpClient &&client) {

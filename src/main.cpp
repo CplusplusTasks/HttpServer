@@ -49,37 +49,37 @@ int main() {
             auto queries = request.getPostMapQuery();
 
             if (resPath == "/new_player") {
-                statusCode = gameServer.addPlayer(queries["name"]);
+                statusCode = gameServer.add_player(queries["name"]);
             } else if (resPath == "/leave_game") {
                 string name = queries["name"]; 
-                string partnerName = queries["with"]; 
-                gameServer.deletePlayer(name, partnerName);
+                string partnerName = queries["with"];
+                gameServer.delete_player(name, partnerName);
             } else if (resPath == "/create_field") {
                 int fieldSize = stoi(queries["size"]);
                 string name = queries["name"];
-                gameServer.setCreator(name, fieldSize);
+                gameServer.set_creator(name, fieldSize);
             } else if (resPath == "/join_with") {
                 string creator = queries["with"];
                 string player = queries["name"];
-                statusCode = gameServer.joinWith(player, creator); 
+                statusCode = gameServer.join_with(player, creator);
             } else if (resPath == "/start_play") {
                 string creator = queries["name"];
                 string player = queries["with"];
-                statusCode = gameServer.startPlay(player, creator);
+                statusCode = gameServer.start_play(player, creator);
             } else if (resPath == "/cancel_create_field") {
-                 gameServer.cancelCreator(queries["name"]);
+                gameServer.cancel_creator(queries["name"]);
             } else if (resPath == "/put_fig") {
                 string name = queries["name"];
                 int row = stoi(queries["row"]);
                 int column = stoi(queries["column"]);
-                gameServer.putFig(name, row, column);
+                gameServer.put_fig(name, row, column);
             } else if (resPath == "/play_again") {
                 cerr << "again" << endl;
                 string name = queries["name"];
-                gameServer.restartGame(name); 
+                gameServer.restart_game(name);
             } else if (resPath == "/get_game_state") {
                 string name = queries["name"];
-                message = gameServer.getGameStateJson(name);
+                message = gameServer.get_game_state_json(name);
                 resExtension = "json";
             } else {
                 string path = PREFIX + "demo" + resPath;

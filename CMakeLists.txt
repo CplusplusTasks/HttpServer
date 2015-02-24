@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.4)
-project(HttpServer)
+project(Tic_Tac_Toe)
 
 # for YouCompleteMe
 set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
@@ -30,7 +30,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${dir})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${dir})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${dir})
 
-add_executable(HttpServer ${SOURCE_FILES})
+add_executable(Tic_Tac_Toe ${SOURCE_FILES})
 
 # TARGET_LINK_LIBRARIES(TcpServer myserver)
 

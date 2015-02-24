@@ -12,38 +12,38 @@ public:
     struct Player;
     struct GameField;
 
-    int addPlayer(std::string);
-    void deletePlayer(std::string name, std::string partnerName);
-    void setCreator(std::string name, int fieldSize);
-    void cancelCreator(std::string name);
+    int add_player(std::string);
+    void delete_player(std::string name, std::string partner_name);
+    void set_creator(std::string name, int field_size);
+    void cancel_creator(std::string name);
 
     // player join with creator. Player waiting begin of the game
-    int joinWith(std::string player, std::string creator); 
+    int join_with(std::string player, std::string creator);
 
     // creator accept invite. Game start.
-    int startPlay(std::string player, std::string creator);
+    int start_play(std::string player, std::string creator);
 
     // check if creator accept invite from player. return not empty string if true
-    bool checkIfAccept(std::string name); 
+    bool check_if_accept(std::string name);
 
-    std::string getAllPlayers();
-    std::string getCreators();
-    std::string getReadyPlayers(std::string creator);
-    std::string getField(std::string name);
-    bool getTurn(std::string name);
-    std::string getGameStateJson(std::string name);
+    std::string get_all_players();
+    std::string get_creators();
+    std::string get_ready_players(std::string creator);
+    std::string get_field(std::string name);
+    bool get_turn(std::string name);
+    std::string get_game_state_json(std::string name);
 
-    void putFig(std::string name, int row, int column);
-    void restartGame(std::string name);
+    void put_fig(std::string name, int row, int column);
+    void restart_game(std::string name);
 private:
     template<typename InputIterator>
-    std::string createJsonArray(InputIterator begin, InputIterator end);
+    std::string create_json_array(InputIterator begin, InputIterator end);
 
-    std::set<std::string> usedNames;
-    std::unordered_set<std::string> creatorsInWaiting;
-    std::unordered_map< std::string, std::unique_ptr<Player> > getPlayer;
-    std::unordered_map<Player*, Player*> playPairs;
-    std::unordered_map< std::string, std::set<std::string> > readyPlayers;
+    std::set<std::string> used_names;
+    std::unordered_set<std::string> creators_in_waiting;
+    std::unordered_map< std::string, std::unique_ptr<Player> > get_player;
+    std::unordered_map<Player*, Player*> play_pairs;
+    std::unordered_map< std::string, std::set<std::string> > ready_players;
 };
 
 
@@ -55,23 +55,23 @@ public:
     const static char FIG_O = 'O';
 
     GameField(int size);
-    void setFig(int row, int column, char fig); 
-    char getWinner(); // one of 3 possible variants
-    int getSize(); 
-    std::pair<int, int> getLastStep();
-    std::vector< std::vector<char> >& getField();
+    void set_fig(int row, int column, char fig);
+    char get_winner(); // one of 3 possible variants
+    int get_size();
+    std::pair<int, int> get_last_step();
+    std::vector< std::vector<char> >& get_field();
     void restart();
 
 private:
-    bool isGood(int, int); 
-    int getNumFig(int row, int column, int dx, int dy, char fig);
+    bool is_good(int, int);
+    int get_num_fig(int row, int column, int dx, int dy, char fig);
 
     const static int dx[];
     const static int dy[];
     const int size;
-    int cntFigForWin;
+    int cnt_fig_for_win;
     char winner;
-    std::pair<int, int> lastStep;
+    std::pair<int, int> last_step;
     std::vector< std::vector<char> > field;
 };
 
@@ -79,11 +79,11 @@ struct GameServer::Player {
 public:
     Player(std::string name);
     std::string name;
-    int numWins;
-    char myFig;
+    int num_wins;
+    char my_fig;
     bool creator;
-    bool myTurn;
-    std::shared_ptr<GameField> gameField;
-    void setFig(int row, int column);
+    bool my_turn;
+    std::shared_ptr<GameField> game_field;
+    void set_fig(int row, int column);
 };
 #endif

@@ -210,8 +210,7 @@ void TcpServer::notify_all() {
     epoll->close_socket(sfd);
 }
 
-// do refactor, remove client
-void TcpServer::close_client(int sfd) {
+void TcpServer::remove_client(int sfd) {
     #ifndef NDEBUG
         if (!get_clients_iterator.count(sfd)) return;
     #endif

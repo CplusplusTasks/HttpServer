@@ -70,15 +70,11 @@ namespace network {
 
         void set_valid(bool);
 
-        void create_new_client(int sfd, const std::string &ip, EpollLoop *epoll);
-
         void on_receive();
 
         void notify_all();
 
-        void close_client(int);
-
-        bool safely_set_opt(int);
+        void remove_client(int);
 
         int accept_to_socket();
 
