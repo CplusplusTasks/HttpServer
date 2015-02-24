@@ -1,23 +1,22 @@
 #include <fstream>
 #include <algorithm>
 #include <iostream>
-#include "EpollLoop.h"
-#include "Server.h"
 #include <unordered_map>
+#include "EpollLoop.h"
+#include "HttpServer.h"
 #include "HttpResponse.h"
 #include "HttpRequest.h"
+#include "GameServer.h"
 #include <set>
 #include <unordered_set>
 #include <memory>
 #include <iterator>
-#include "GameServer.h"
 #define PORT "7777"
 
 using namespace std;
-using namespace MyServer;
-using namespace MyHttpManager;
+using namespace network;
 
-const string PREFIX = "build/";
+const string PREFIX = "";
 
 string getFile(string path) {
     ifstream in(path);
@@ -35,13 +34,13 @@ int main() {
     EpollLoop epoll;
     GameServer gameServer;
     try {
-        Server server(&epoll, "10.0.0.12", PORT);
-        server.set_callback_on_accept([&server] (Client*) {
-            //cerr << "new: " << client->get_sfd() << endl;
+        HttpServer server(&epoll, "", PORT);
+        server.set_callback_on_accept([&server] (HttpClient* client) {
+            cerr << "new: " << client->get_sfd() << endl;
         });
 
-        server.set_callback_on_receive([&server, &gameServer] (Client* client) {
-            HttpRequest request(client);
+        server.set_callback_on_receive([&server, &gameServer] (HttpClient* client) {
+            HttpRequest request(client->get_next_request());
 
             string message;
             string resPath = request.getResourcePath();
@@ -55,7 +54,6 @@ int main() {
                 string name = queries["name"]; 
                 string partnerName = queries["with"]; 
                 gameServer.deletePlayer(name, partnerName);
-                cerr << "LEAVE: " << name << endl;
             } else if (resPath == "/create_field") {
                 int fieldSize = stoi(queries["size"]);
                 string name = queries["name"];
@@ -100,12 +98,12 @@ int main() {
             response
                 .setStatusCode(statusCode)
                 .setExtension(resExtension)
-                .setMessage(message)
-                .send(client);
+                .setMessage(message);
+            client->send(response);
         });
 
-        server.set_callback_on_close([&] (Client*) {
-            //cerr << "close: " << client->get_sfd() << endl;
+        server.set_callback_on_close([&] (HttpClient* client) {
+            cerr << "close: " << client->get_sfd() << endl;
             //if (server.getCountClients() == 1) {
                 //server.shut_down();
             //}
@@ -118,3 +116,6 @@ int main() {
     }
     return 0;
 }
+
+// HttpServer 38
+// TcpClient 142

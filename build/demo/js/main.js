@@ -129,7 +129,6 @@ function joinOnClick() {
     $("#joinStep").slideDown();
     updListOfCreators()
     idUpdListOfCreators = setInterval(updListOfCreators, 2000);
-    $("#updListOfCreatorsButton").on("click", updListOfCreators);
 }
 
 function updListOfCreators() {
@@ -291,7 +290,6 @@ function changeGameFieldWithSize() {
         }
     });
 }
-
 
 function hideAllSteps() {
     $("#myNameBlock").slideDown();

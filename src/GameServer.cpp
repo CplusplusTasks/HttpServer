@@ -1,4 +1,5 @@
 #include "GameServer.h"
+#include <iostream>
 #include <cassert>
 
 using namespace std;
@@ -255,7 +256,6 @@ string GameServer::getGameStateJson(string name) {
 
        if (gameField->getWinner() != GameField::UNDEFINED) {
            string iWin = gameField->getWinner() == player->myFig ? "true" : "false";
-           cerr << "win: " << iWin << endl;
            result += "\"win\": " + iWin + ",";
        }
 

@@ -3,38 +3,40 @@
 #include <sstream>
 #include <cstring>
 #include <algorithm>
+#include <map>
 
-using namespace MyHttpManager;
+using namespace network;
 using std::string;
 using std::isspace;
 using std::vector;
 using std::cout;
 using std::endl;
+using std::map;
 typedef vector<char> const& request_t;
 typedef vector<char>::size_type vector_sz_t;
 
 void HttpRequest::print() const {
     cout << "--------BEGIN PRINT---------" << endl;
     cout << "header: " << endl << header << endl;
-    //cout << "---------" << endl;
-    //cout << "postMessage: " << postMessage << endl;
-    //cout << "hostName: " << hostName << endl;
-    //cout << "queryUrl: " << queryUrl << endl;
-    //cout << "requestMethod: " << requestMethod << endl;
-    //cout << "acceptLanguage: " << acceptLanguage << endl;
-    //cout << "resourcePath: " << resourcePath << endl;
-    //cout << "extensionOfResource: " << extensionOfResource << endl;
-    //cout << "postContentLength: " << postContentLength << endl;
+    cout << "---------" << endl;
+    cout << "postMessage: " << postMessage << endl;
+    cout << "hostName: " << hostName << endl;
+    cout << "queryUrl: " << queryUrl << endl;
+    cout << "requestMethod: " << requestMethod << endl;
+    cout << "acceptLanguage: " << acceptLanguage << endl;
+    cout << "resourcePath: " << resourcePath << endl;
+    cout << "extensionOfResource: " << extensionOfResource << endl;
+    cout << "postContentLength: " << postContentLength << endl;
 
-    //cout << "queryInUrl: " << endl;
-    //for (std::pair<string, string> pp : mapQueriesFromUrl) {
-        //cout << pp.first << " = " << pp.second << endl;
-    //}
+    cout << "queryInUrl: " << endl;
+    for (std::pair<string, string> pp : mapQueriesFromUrl) {
+        cout << pp.first << " = " << pp.second << endl;
+    }
 
-    //cout << "queryPost: " << endl;
-    //for (std::pair<string, string> pp : postMapQuery) {
-        //cout << pp.first << " = " << pp.second << endl;
-    //}
+    cout << "queryPost: " << endl;
+    for (std::pair<string, string> pp : postMapQuery) {
+        cout << pp.first << " = " << pp.second << endl;
+    }
     cout << "--------END PRINT---------" << endl;
 }
 
@@ -82,52 +84,53 @@ string HttpRequest::getExtensionOfResource() const {
     return extensionOfResource;
 }
 
-namespace MyHttpManager {
-    void skipWhiteSpace(vector_sz_t& curPos, request_t request) {
-        while (curPos < request.size() && isspace(request[curPos])) {
+namespace network {
+    void skipWhiteSpace(vector_sz_t &curPos, request_t request, vector_sz_t length) {
+        while (curPos < length && isspace(request[curPos])) {
             curPos++;
         }
     }
 
-    string getNextWord(vector_sz_t& curPos, request_t request, char delimiter = ' ') {
-        skipWhiteSpace(curPos, request);
+    string getNextWord(vector_sz_t &curPos, request_t request, vector_sz_t length, char delimiter = ' ') {
+        skipWhiteSpace(curPos, request, length);
         string result = "";
-        if (curPos < request.size()) 
+        if (curPos < length)
             do {
                 result.push_back(request[curPos]);
                 curPos++;
-            } while (curPos < request.size() && !(isspace(request[curPos]) || request[curPos] == delimiter));
+            } while (curPos < length && !(isspace(request[curPos]) || request[curPos] == delimiter));
 
         return result;
     }
 
-    void goNextLine(vector_sz_t& curPos, request_t request) {
-        while(curPos < request.size() && request[curPos] != '\r') {
+    void goNextLine(vector_sz_t &curPos, request_t request, vector_sz_t length) {
+        while (curPos < length && request[curPos] != '\r') {
             curPos++;
         }
     }
 
-    bool endOfHeader(vector_sz_t curPos, request_t request) {
-        if (curPos + 3 < request.size()) {
+    bool endOfHeader(vector_sz_t curPos, request_t request, vector_sz_t length) {
+        if (curPos + 3 < length) {
             if (request[curPos] == '\r' &&
-                request[curPos + 1] == '\n' &&
-                request[curPos + 2] == '\r' &&
-                request[curPos + 3] == '\n')
+                    request[curPos + 1] == '\n' &&
+                    request[curPos + 2] == '\r' &&
+                    request[curPos + 3] == '\n')
                 return true;
         }
         return false;
     }
+
 }
 
-void HttpRequest::checkEndOfHeader(vector_sz_t& curPos, request_t request) {
-    goNextLine(curPos, request);
-    if (endOfHeader(curPos, request)) {
+void HttpRequest::checkEndOfHeader(vector_sz_t& curPos, request_t request, vector_sz_t length) {
+    goNextLine(curPos, request, length);
+    if (endOfHeader(curPos, request, length)) {
         header = string(request.data(), curPos);
         curPos += 4; //skip \r\n\r\n
-        if (curPos < request.size()) {
-            postMessage = string(request.begin() + curPos, request.end());
-            curPos = request.size();
-        }    
+        if (curPos < length) {
+            postMessage = string(request.begin() + curPos, request.begin() + curPos + postContentLength);
+            curPos = length;
+        }
     } else {
         curPos += 2; //skip \r\n
     }
@@ -143,12 +146,11 @@ vector<string> split(const string& str, char delim) {
    return result; // std::move() ? return value optimization =(
 }
 
-using namespace std;
-void HttpRequest::splitQuery(std::map<string, string>& toMap, string str) {
+void HttpRequest::splitQuery(map<string, string>& toMap, string str) {
     for (string curValue : split(str, '&')) {
        vector<string> keyAndValue = split(curValue, '=');
        if (keyAndValue.size() == 0)
-           throw invalid_argument("bad query");
+           throw std::invalid_argument("bad query");
        toMap[keyAndValue[0]] =  keyAndValue.size() > 1 ? keyAndValue[1] : "";
     }
 }
@@ -157,40 +159,39 @@ void HttpRequest::fillOtherFields() {
     string::iterator questionPos = std::find(queryUrl.begin(), queryUrl.end(), '?');
     resourcePath = queryUrl;
     if (questionPos != queryUrl.end()) {
-        string queryInUrl = string(questionPos + 1, queryUrl.end()); 
+        string queryInUrl = string(questionPos + 1, queryUrl.end());
         splitQuery(mapQueriesFromUrl, queryInUrl);
-        resourcePath = string(queryUrl.begin(), questionPos); 
+        resourcePath = string(queryUrl.begin(), questionPos);
     }
-    
+
     string::reverse_iterator last_dot = std::find(queryUrl.rbegin(), queryUrl.rend(), '.');
     if (last_dot != queryUrl.rend())
         extensionOfResource = string(last_dot.base(), questionPos);
-    
-    if (!postMessage.empty()) 
+
+    if (!postMessage.empty())
         splitQuery(postMapQuery, postMessage);
 }
 
 // constructor
-HttpRequest::HttpRequest(MyServer::Client* client) {
+HttpRequest::HttpRequest(request_t request, vector_sz_t length) {
     postContentLength = -1;
-    vector<char> request;
-    client->read_all(request);
 
     vector_sz_t curPos = 0;
-    requestMethod = getNextWord(curPos, request); 
-    queryUrl = getNextWord(curPos, request);
+    requestMethod = getNextWord(curPos, request, length);
+    queryUrl = getNextWord(curPos, request, length);
 
-    while (curPos < request.size()) {
-        checkEndOfHeader(curPos, request);
-        string curWord = getNextWord(curPos, request, ':'); 
+    while (curPos < length) {
+        if (requestMethod == "POST")
+            checkEndOfHeader(curPos, request, length);
+        string curWord = getNextWord(curPos, request, length, ':');
         curPos++;
         if (curWord == "Host") {
-            hostName = getNextWord(curPos, request);
+            hostName = getNextWord(curPos, request, length);
         } else if (curWord == "Accept-Language") {
-            acceptLanguage = getNextWord(curPos, request);
+            acceptLanguage = getNextWord(curPos, request, length);
         } else if (curWord == "Content-Length") {
-            postContentLength = std::stoi(getNextWord(curPos, request));
-        } 
+            postContentLength = std::stoi(getNextWord(curPos, request, length));
+        }
     }
     fillOtherFields();
 }

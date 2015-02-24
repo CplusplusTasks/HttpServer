@@ -1,9 +1,10 @@
 #ifndef SOCKET_H
 #define SOCKET_H
+
 #include <string>
 
-namespace MyServer {
-    struct Socket {
+namespace network {
+    struct TcpSocket {
     public:
         virtual void send(const std::string &msg) const = 0;
 
