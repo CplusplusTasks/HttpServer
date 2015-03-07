@@ -2,15 +2,9 @@
 #include <algorithm>
 #include <iostream>
 #include <unordered_map>
-#include "EpollLoop.h"
-#include "HttpServer.h"
-#include "HttpResponse.h"
-#include "HttpRequest.h"
-#include "GameServer.h"
-#include <set>
-#include <unordered_set>
-#include <memory>
-#include <iterator>
+#include "../headers/EpollLoop.h"
+#include "../headers/HttpServer.h"
+#include "../headers/GameServer.h"
 #define PORT "7777"
 
 using namespace std;
@@ -31,6 +25,7 @@ string getFile(string path) {
 
 
 int main() {
+    set<int> s;
     EpollLoop epoll;
     GameServer gameServer;
     try {
@@ -119,3 +114,26 @@ int main() {
 
 // HttpServer 38
 // TcpClient 142
+//
+// awful errors ex: 
+// 
+//#include <iostream>
+//#include <cstdio>
+//#include <vector>
+
+//using namespace std;
+
+//template<class T>
+//void print(T from, T to) {
+    //while (from != to) {
+        //cout << *from << endl;
+        //from++;
+    //}
+//}
+
+//struct A {};
+
+//int main() {
+    //print(A(), A());
+    //return 0;
+//}
