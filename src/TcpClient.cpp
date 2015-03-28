@@ -121,7 +121,7 @@ int TcpClient::read_all(vector<char>& buff) {
 }
 
 void TcpClient::on_receive() {
-    if (is_closed) { //is_closed
+    if (is_closed) {
         notify_all();
     } else if (callback_on_receive != NULL) {
         callback_on_receive();

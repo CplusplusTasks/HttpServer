@@ -1,18 +1,15 @@
 #include <unistd.h>
 #include "TcpServer.h"
+#include <cassert>
 #define cur_loc get_cur_loc(__FILE__, __func__, __LINE__)
-#ifndef NDEBUG
-#define check_on_valid  if (!valid) throw MyServerException((string) "Attempt to run function: " + __PRETTY_FUNCTION__ + ", but client's socket is invalid.");
-#else
-#define check_on_valid
-#endif
 
-using namespace std;
 using namespace network;
+using std::string;
+using std::function;
 
-namespace network {
+namespace {
     static string get_cur_loc(string file, string fun, int line) {
-        return file + ": " + fun + ": " + to_string(line);
+        return file + ": " + fun + ": " + std::to_string(line);
     }
 
     static void print_error(string msg) {
@@ -21,7 +18,7 @@ namespace network {
     }
 }
 
-TcpServer::TcpServer(EpollLoop *epoll, std::string addr, std::string port) :
+TcpServer::TcpServer(EpollLoop *epoll, string addr, string port) :
         backlog(10),
         valid(true),
         addr(addr),
@@ -95,8 +92,12 @@ void TcpServer::listen(const char *addr, const char *port) {
     epoll->add_to_watching(this);
 }
 
-void TcpServer::send(const std::string &msg) const {
-    check_on_valid
+void TcpServer::send(const string &msg) const {
+#ifndef NDEBUG
+    if (!valid) {
+        throw MyServerException("Attempt to send message, but client is invalid.");
+    }
+#endif
     for (TcpClient const &c : clients) {
         c.send(msg);
     }
@@ -168,11 +169,13 @@ void TcpServer::on_receive() {
             return;
         }
 
-        if (forall_callback_on_receive != NULL)
+        if (forall_callback_on_receive != NULL) {
             client->set_callback_on_receive(std::bind(forall_callback_on_receive, client));
+        }
 
-        if (forall_callback_on_close != NULL)
+        if (forall_callback_on_close != NULL) {
             client->set_callback_on_close(std::bind(forall_callback_on_close, client));
+        }
 
         if (forall_callback_on_accept != NULL) {
             forall_callback_on_accept(client);
@@ -199,8 +202,8 @@ void TcpServer::close_notify() {
     epoll = NULL;
 }
 
-//INV: server is valid
 void TcpServer::notify_all() {
+    assert(valid);
     for (TcpClient &c : clients) {
         if (c.is_valid()) {
             c.safely_close_socket(cur_loc, false);
@@ -249,21 +252,20 @@ string TcpServer::get_ip_of_client(const sockaddr_in *client_info) {
     }
 }
 
-void TcpServer::set_callback_on_accept(std::function<void(TcpClient *)> forall_callback_on_accept) {
+void TcpServer::set_callback_on_accept(function<void(TcpClient *)> forall_callback_on_accept) {
     this->forall_callback_on_accept = forall_callback_on_accept;
 }
 
-void TcpServer::set_callback_on_receive(std::function<void(TcpClient *)> forall_callback_on_receive) {
+void TcpServer::set_callback_on_receive(function<void(TcpClient *)> forall_callback_on_receive) {
     this->forall_callback_on_receive = forall_callback_on_receive;
 }
 
-void TcpServer::set_callback_on_close(std::function<void(TcpClient *)> forall_callback_on_close) {
+void TcpServer::set_callback_on_close(function<void(TcpClient *)> forall_callback_on_close) {
     this->forall_callback_on_close = forall_callback_on_close;
 }
 
-MyServerException::MyServerException(std::string msg) :
-        runtime_error(msg) {
-}
+MyServerException::MyServerException(string msg) :
+        runtime_error(msg) {}
 
 void TcpServer::shut_down() {
     close_notify();

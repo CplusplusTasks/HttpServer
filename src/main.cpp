@@ -2,9 +2,9 @@
 #include <algorithm>
 #include <iostream>
 #include <unordered_map>
-#include "../headers/EpollLoop.h"
-#include "../headers/HttpServer.h"
-#include "../headers/GameServer.h"
+#include "EpollLoop.h"
+#include "HttpServer.h"
+#include "GameServer.h"
 #define PORT "7777"
 
 using namespace std;
@@ -23,13 +23,12 @@ string getFile(string path) {
     return page;
 }
 
-
 int main() {
     set<int> s;
     EpollLoop epoll;
     GameServer gameServer;
     try {
-        HttpServer server(&epoll, "", PORT);
+        HttpServer server(&epoll, "10.42.0.1", PORT);
         server.set_callback_on_accept([&server] (HttpClient* client) {
             cerr << "new: " << client->get_sfd() << endl;
         });
@@ -99,9 +98,8 @@ int main() {
 
         server.set_callback_on_close([&] (HttpClient* client) {
             cerr << "close: " << client->get_sfd() << endl;
-            //if (server.getCountClients() == 1) {
-                //server.shut_down();
-            //}
+            // TBD
+            // send msg to partner
         });
 
         epoll.start();
@@ -112,28 +110,4 @@ int main() {
     return 0;
 }
 
-// HttpServer 38
-// TcpClient 142
-//
-// awful errors ex: 
-// 
-//#include <iostream>
-//#include <cstdio>
-//#include <vector>
-
-//using namespace std;
-
-//template<class T>
-//void print(T from, T to) {
-    //while (from != to) {
-        //cout << *from << endl;
-        //from++;
-    //}
-//}
-
-//struct A {};
-
-//int main() {
-    //print(A(), A());
-    //return 0;
-//}
+// /home/eugene/university/programming/practice/c++/questions

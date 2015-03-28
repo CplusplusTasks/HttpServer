@@ -56,7 +56,7 @@ public:
 
     GameField(int size);
     void set_fig(int row, int column, char fig);
-    char get_winner(); // one of 3 possible variants
+    char get_winner(); 
     int get_size();
     std::pair<int, int> get_last_step();
     std::vector< std::vector<char> >& get_field();

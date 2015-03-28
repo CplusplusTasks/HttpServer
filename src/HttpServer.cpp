@@ -1,4 +1,4 @@
-#include <HttpServer.h>
+#include "HttpServer.h"
 #include <iostream>
 #include <memory>
 
@@ -35,13 +35,11 @@ void HttpServer::set_callback_on_accept(std::function<void(HttpClient *)> forall
     });
 }
 
-// when i wrote std::function<void(HttpClient *)> forall_callback_on_close
-// he ask me capture forall_callback_on_close, but i already captured this
-void HttpServer::set_callback_on_close(std::function<void(HttpClient *)> forall_callback_on_close2) {
-    forall_callback_on_close = forall_callback_on_close2;
+void HttpServer::set_callback_on_close(std::function<void(HttpClient *)> forall_callback_on_close) {
+    this->forall_callback_on_close = forall_callback_on_close;
     server.set_callback_on_close([this](TcpClient* client) {
         std::list<HttpClient>::iterator cur_http_client = get_clients_iterator[client->get_sfd()];
-        forall_callback_on_close(&*cur_http_client);
+        this->forall_callback_on_close(&*cur_http_client);
         clients.erase(cur_http_client);
         get_clients_iterator.erase(client->get_sfd());
     });

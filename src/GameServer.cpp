@@ -288,6 +288,9 @@ void GameServer::put_fig(string name, int row, int column) {
     Player* player = get_player[name].get();
     player->set_fig(row, column);
     player->my_turn = false;
+    if (!play_pairs.count(player)) {
+        return;
+    }
     play_pairs[player]->my_turn = true;
 
     if (player->game_field->get_winner() != GameServer::GameField::UNDEFINED) {

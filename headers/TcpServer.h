@@ -12,10 +12,10 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <arpa/inet.h>
+#include <memory>
 #include "EpollLoop.h"
 #include "TcpSocket.h"
 #include "TcpClient.h"
-#include <memory>
 
 namespace network {
     struct TcpClient;
