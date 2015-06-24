@@ -1,4 +1,7 @@
 # Tic-tac-toe
+в config.txt содержится номер адресса и порта по кооторому будут производиться подключения
+для запуска ./run.sh , после в браузере можно запускать localhost:port (by default localhost:7777)
+
 http://sorokin.github.io/cpp-year2013/task-course-work.html
 
 <html xmlns="http://www.w3.org/1999/xhtml">
