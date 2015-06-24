@@ -5,12 +5,11 @@
 #include "EpollLoop.h"
 #include "HttpServer.h"
 #include "GameServer.h"
-#define PORT "7777"
 
 using namespace std;
 using namespace network;
 
-const string PREFIX = "";
+const string PREFIX_PATH = "www/";
 
 string getFile(string path) {
     ifstream in(path);
@@ -28,7 +27,12 @@ int main() {
     EpollLoop epoll;
     GameServer gameServer;
     try {
-        HttpServer server(&epoll, "10.42.0.1", PORT);
+        string addr, port;
+        {
+            ifstream in("config.txt");
+            in >> addr >> port;
+        }
+        HttpServer server(&epoll, addr, port);
         server.set_callback_on_accept([&server] (HttpClient* client) {
             cerr << "new: " << client->get_sfd() << endl;
         });
@@ -76,7 +80,7 @@ int main() {
                 message = gameServer.get_game_state_json(name);
                 resExtension = "json";
             } else {
-                string path = PREFIX + "demo" + resPath;
+                string path = PREFIX_PATH + resPath;
                 resExtension = request.getExtensionOfResource();
                 if (resExtension.empty()) {
                     resExtension = "html";
