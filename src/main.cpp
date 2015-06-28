@@ -11,8 +11,9 @@
 using namespace std;
 using namespace network;
 
-const string PREFIX_PATH = "www/";
-int pipefd[2];
+namespace {
+    EpollLoop epoll;
+}
 
 string getFile(string path) {
     ifstream in(path);
@@ -25,13 +26,12 @@ string getFile(string path) {
     return page;
 }
 
-EpollLoop epoll;
-
 void sigint_handler(int) {
     epoll.pause_epoll_loop();
 }
 
 int main() {
+    const string PREFIX_PATH = "www/";
     struct sigaction sa;
     memset(&sa, 0, sizeof(sa));
     sa.sa_handler = sigint_handler;
@@ -50,7 +50,7 @@ int main() {
             cerr << "new: " << client->get_sfd() << endl;
         });
 
-        server.set_callback_on_receive([&server, &gameServer] (HttpClient* client) {
+        server.set_callback_on_receive([&server, &gameServer, PREFIX_PATH] (HttpClient* client) {
             HttpRequest request(client->get_next_request());
 
             string message;
