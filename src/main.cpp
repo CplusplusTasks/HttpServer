@@ -5,11 +5,14 @@
 #include "EpollLoop.h"
 #include "HttpServer.h"
 #include "GameServer.h"
+#include <signal.h>
+#include <unistd.h>
 
 using namespace std;
 using namespace network;
 
 const string PREFIX_PATH = "www/";
+int pipefd[2];
 
 string getFile(string path) {
     ifstream in(path);
@@ -22,9 +25,19 @@ string getFile(string path) {
     return page;
 }
 
+EpollLoop epoll;
+
+void sigint_handler(int) {
+    epoll.pause_epoll_loop();
+}
+
 int main() {
+    struct sigaction sa;
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_handler = sigint_handler;
+    sigaction(SIGINT, &sa, NULL);
+
     set<int> s;
-    EpollLoop epoll;
     GameServer gameServer;
     try {
         string addr, port;
@@ -111,7 +124,7 @@ int main() {
     } catch(MyServerException& e) {
         cerr << e.what() << endl;
     }
+
     return 0;
 }
 
-// /home/eugene/university/programming/practice/c++/questions

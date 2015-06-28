@@ -27,7 +27,7 @@ namespace network {
         int epfd;
         uint32_t events_mask;
         const static int MAX_EVENTS = 64;
-        bool launched;
+        int pause_pipe[2];
         epoll_event evlist[MAX_EVENTS], ev;
         std::unordered_map<int, TcpSocket *> get_socket;
         std::unordered_map<int, std::deque < std::string> >
@@ -40,6 +40,8 @@ namespace network {
         ssize_t send_msg(int, std::string);
 
         void close_socket(int);
+
+        void add_fd(int);
 
         friend struct TcpServer;
         friend struct TcpClient;

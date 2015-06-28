@@ -10,27 +10,35 @@
 using namespace std;
 using namespace network;
 
-static string get_cur_loc(string file, string fun, int line) {
-    return file + ": " + fun + ": " + to_string(line);
-}
+namespace {
+    static string get_cur_loc(string file, string fun, int line) {
+        return file + ": " + fun + ": " + to_string(line);
+    }
 
-static void print_error(string msg) {
-    perror(msg.c_str());
-    throw MyServerException("Something go wrong. See above.");
-}
-
-static void safely_close_socket(int sfd, const std::string &from_fun) {
-    if (close(sfd) == -1) {
-        perror((from_fun + ": safely_close_socket").c_str());
+    static void print_error(string msg) {
+        perror(msg.c_str());
         throw MyServerException("Something go wrong. See above.");
+    }
+
+    static void safely_close_socket(int sfd, const std::string &from_fun) {
+        if (close(sfd) == -1) {
+            perror((from_fun + ": safely_close_socket").c_str());
+            throw MyServerException("Something go wrong. See above.");
+        }
     }
 }
 
-EpollLoop::EpollLoop() :
-        events_mask(EPOLLIN | EPOLLET) {
+EpollLoop::EpollLoop() 
+    : events_mask(EPOLLIN | EPOLLET) 
+{
     epfd = epoll_create1(0);
     if (epfd == -1)
         print_error(cur_loc + ": epoll_create");
+
+    if (pipe(pause_pipe) < 0) 
+        print_error(cur_loc + ": epoll_create");
+
+    add_fd(pause_pipe[0]);
 }
 
 void EpollLoop::add_to_send(int sfd, string const &msg) {
@@ -44,7 +52,7 @@ void EpollLoop::add_to_send(int sfd, string const &msg) {
 }
 
 void EpollLoop::pause_epoll_loop() {
-    launched = false;
+    write(pause_pipe[1], "stop", 4);
 }
 
 void EpollLoop::remove_flag_epollout(int sfd) {
@@ -56,7 +64,6 @@ void EpollLoop::remove_flag_epollout(int sfd) {
 }
 
 ssize_t EpollLoop::send_msg(int client_socket, string data_for_client) {
-//    cerr << "i prepare send msg: " << client_socket << "  " << data_for_client << endl;
 
     ssize_t len_data_for_client = data_for_client.size();
     ssize_t sent_bytes = send(client_socket, (void *) data_for_client.c_str(), len_data_for_client, MSG_NOSIGNAL);
@@ -71,10 +78,9 @@ ssize_t EpollLoop::send_msg(int client_socket, string data_for_client) {
 void EpollLoop::start() {
     TcpSocket *socket;
     uint32_t mask;
-    launched = true;
 
+    bool launched = true;
     while (!get_socket.empty() && launched) {
-//        cerr << "epoll_wait()" << endl;
         int ready = epoll_wait(epfd, evlist, MAX_EVENTS, -1);
         if (ready == -1) {
             if (errno == EINTR)
@@ -87,6 +93,11 @@ void EpollLoop::start() {
             mask = events_mask;
             if (!get_sending_msg.empty()) {
                 mask |= EPOLLOUT;
+            }
+
+            if (evlist[i].data.fd == pause_pipe[0]) {
+                launched = false;
+                break;
             }
             socket = get_socket[evlist[i].data.fd];
             if ((evlist[i].events & (EPOLLERR | EPOLLHUP)) ||
@@ -123,12 +134,16 @@ void EpollLoop::start() {
 
 void EpollLoop::add_to_watching(TcpSocket * socket) {
     int sfd = socket->get_sfd();
-    ev.events = events_mask;
-    ev.data.fd = sfd;
-
-    if (epoll_ctl(epfd, EPOLL_CTL_ADD, sfd, &ev) == -1)
-        print_error(cur_loc + ": epoll_ctl");
+    add_fd(sfd);
     get_socket[sfd] = socket;
+}
+
+void EpollLoop::add_fd(int fd) {
+    ev.events = events_mask;
+    ev.data.fd = fd;
+
+    if (epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev) == -1)
+        print_error(cur_loc + ": epoll_ctl");
 }
 
 void EpollLoop::close_socket(int sfd) {
